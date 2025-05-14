@@ -1,12 +1,17 @@
+import { toast } from "sonner";
 export const generateProof = async (birthYear: number) => {
   try {
     // Initial setup
-    console.log("⏳ Setting up session...");
-    console.log("✅ Session configured...");
-    console.log("⏳ Generating witness...");
-    console.log("✅ Witness generated...");
-    console.log("⏳ Generating proof...");
-    console.log("✅ Proof generated...");
+
+    toast.loading("Configurando sessão...");
+    // await 1 seconds
+    toast.success("Sessão configurada");
+    toast.loading("Gerando witness...");
+    // await 1 seconds
+    toast.success("Witness gerado");
+    toast.loading("Gerando prova...");
+    // await 1 seconds
+    toast.success("Prova gerada");
 
     fetch("/api/submit-proof", {
       method: "POST",
@@ -18,7 +23,7 @@ export const generateProof = async (birthYear: number) => {
       }),
     });
   } catch (err) {
-    console.log("💔 Error generating proof");
+    toast.error("Erro ao gerar prova");
     console.error("💔 Proof generation failed:", err);
   }
 };

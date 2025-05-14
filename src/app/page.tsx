@@ -2,22 +2,15 @@
 
 import { TonConnectButton, useTonWallet } from "@tonconnect/ui-react";
 import { TonConnectUIProvider } from "@tonconnect/ui-react";
+import { HelloWorld } from "./components/HelloWorld";
+import { BirthdayForm } from "./components/BirthdayForm";
 
 function HomeContent() {
   const wallet = useTonWallet();
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-foreground/5 relative">
-      <div className="text-center">
-        <h1 className="mb-4 font-mono text-4xl font-bold tracking-tight text-foreground/80 sm:text-6xl md:text-7xl">
-          Hello,
-          <br />{" "}
-          <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
-            {wallet ? "World!" : "_ _ _ _ _ !"}
-          </span>
-        </h1>
-      </div>
-
+      {wallet ? <BirthdayForm /> : <HelloWorld />}
       <div className="fixed bottom-35 right-6">
         <TonConnectButton className="tc-btn--up" />
       </div>

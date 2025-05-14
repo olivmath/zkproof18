@@ -24,11 +24,3 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
-
-/* ================================================== */
-/* Override do TonConnect dropdown para abrir para cima */
-/* ================================================== */
-.tc-btn--up + .tcui__popover {
-  top: auto   !important;
-  bottom: calc(100% + 1rem) !important;
-}

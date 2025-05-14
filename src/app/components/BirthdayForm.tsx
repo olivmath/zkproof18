@@ -12,6 +12,9 @@ export function BirthdayForm() {
       </h1>
 
       <div className="flex flex-col items-center gap-4">
+        <label className="text-foreground/80 mb-0.5 block">
+          input your birthdate
+        </label>
         <input
           type="date"
           defaultValue="1997-04-30"

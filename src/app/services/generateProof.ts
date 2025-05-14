@@ -33,8 +33,8 @@ export const generateProof = async (birthYear: number) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         proof,
-        publicInputs,
-        vk: vk,
+        publicInputs: publicInputs[0],
+        vk,
       }),
     });
     toast.dismiss(t3);

@@ -1,3 +1,4 @@
-export async function verifyProof(proof, publicInputs) {
-  return true;
+export async function verifyProof(backend, proof) {
+  const result = await backend.verifyProof(proof);
+  return result;
 }

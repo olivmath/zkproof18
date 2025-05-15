@@ -6,10 +6,11 @@ export const generateProof = async (birthYear: number) => {
   let id;
   try {
     id = toast.loading("Configurando sessão...");
-    const res = await fetch("/circuit.json");
-    const circuit = await res.json();
-    const { Noir } = await import("@noir-lang/noir_js");
     const { UltraPlonkBackend } = await import("@aztec/bb.js");
+    const { Noir } = await import("@noir-lang/noir_js");
+    const res = await fetch("/circuit.json");
+    
+    const circuit = await res.json();
     const noir = new Noir(circuit);
     const backend = new UltraPlonkBackend(circuit.bytecode);
 

@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
   //
   // const { UltraPlonkBackend } = await import("@aztec/bb.js");
   // const circuit = await import("../../../../public/circuit.json");
+
   // const backend = new UltraPlonkBackend(circuit.bytecode);
 
   let id: number | undefined;

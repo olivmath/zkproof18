@@ -67,7 +67,18 @@ export async function POST(req: NextRequest) {
 
     const rawBody = await req.text();
     const body = JSON.parse(rawBody);
+
+  
     const { proof, publicInputs, vk } = body;
+
+    // convert proof to uint8array
+    const proofUint8Array = new Uint8Array(Object.values(proof));
+    // convert vk to uint8array
+    const vkUint8Array = new Uint8Array(Object.values(vk))
+
+    console.log("proofArray", proofUint8Array);
+    console.log("vkArray", vkUint8Array);
+    console.log("publicInputs", publicInputs);
 
     if (!proof || !publicInputs || !vk) {
       return NextResponse.json(

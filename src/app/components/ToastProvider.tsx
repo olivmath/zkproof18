@@ -6,9 +6,12 @@ export function ToastProvider() {
   return (
     <Toaster
       position="top-right"
-      richColors
+      expand={true}
+      visibleToasts={10}
       closeButton
-      theme="dark"
+      theme="light"
+      duration={5000}
+      richColors={true}
     />
   );
 }

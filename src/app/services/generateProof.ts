@@ -1,34 +1,65 @@
 import { toast } from "sonner";
+import { MessageSSE, MessageTypeSSE } from "../utils/types";
+import { sleep } from "../utils/timer";
 
 export const generateProof = async (birthYear: number) => {
-  const { UltraPlonkBackend } = await import("@aztec/bb.js");
-  const { Noir } = await import("@noir-lang/noir_js");
+  let id;
   try {
+    id = toast.loading("Configurando sessão...");
     const res = await fetch("/circuit.json");
     const circuit = await res.json();
+    const { Noir } = await import("@noir-lang/noir_js");
+    const { UltraPlonkBackend } = await import("@aztec/bb.js");
     const noir = new Noir(circuit);
     const backend = new UltraPlonkBackend(circuit.bytecode);
 
+    toast.dismiss(id);
     toast.success("Sessão configurada");
 
     const { witness } = await noir.execute({
       birth_year: birthYear,
       current_year: 2025,
     });
+
     toast.success("Witness gerado");
 
-    const t1 = toast.loading("Gerando prova...");
+    id = toast.loading("Gerando prova...");
     const { proof, publicInputs } = await backend.generateProof(witness);
+    toast.dismiss(id);
     toast.success("Prova gerada");
-    toast.dismiss(t1);
 
-    const t2 = toast.loading("Gerando chave de verificação...");
+    id = toast.loading("Gerando chave de verificação...");
     const vk = await backend.getVerificationKey();
-    toast.dismiss(t2);
+    toast.dismiss(id);
     toast.success("Verificação de chave gerada");
 
-    const t3 = toast.loading("Submetendo provas para backend...");
-    await fetch("/api/submit-proof", {
+    const eventSource = new EventSource("/api/submit-proof");
+
+    eventSource.onmessage = (event) => {
+      const data: MessageSSE = JSON.parse(event.data);
+
+      switch (data.type) {
+        case MessageTypeSSE.INFO:
+          toast.info(data.message);
+          break;
+        case MessageTypeSSE.SUCCESS:
+          toast.success(data.message);
+          break;
+        case MessageTypeSSE.ERROR:
+          toast.error(data.message);
+          break;
+      }
+    };
+
+    eventSource.onerror = () => {
+      eventSource.close();
+      toast.error("Conexão com servidor perdida");
+    };
+
+    toast.loading("Submetendo prova para backend...");
+    toast.success("✅ Seus dados estão seguros 🔐");
+    await sleep(2000);
+    const response = await fetch("/api/submit-proof", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -37,9 +68,16 @@ export const generateProof = async (birthYear: number) => {
         vk,
       }),
     });
-    toast.dismiss(t3);
-  } catch (err) {
-    toast.error("Erro ao gerar prova");
+
+    toast.dismiss();
+    toast.success("Prova enviada com sucesso!");
+    if (!response.ok) {
+      throw new Error("Falha ao enviar prova");
+    }
+
+    eventSource.close();
+  } catch (err: any) {
+    toast.error("Erro ao gerar prova: " + err.message);
     console.error("💔 Proof generation failed:", err);
   }
 };

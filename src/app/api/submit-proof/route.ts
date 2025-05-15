@@ -1,10 +1,31 @@
 import { NextResponse, NextRequest } from "next/server";
-import { submitProofToZkVerify } from "./sendToZkVerifySSR";
+import { submitProofToZkVerify } from "./submitProofToZkVerifySSR";
 import { verifyProof } from "./verifyProofSSR";
+import { emitSSE } from "./eventsSSE";
+import { convertProofToHex } from "./convertProof";
+import { MessageTypeSSE } from "@/app/utils/types";
 
+export async function GET() {
+  const encoder = new TextEncoder();
 
-export async function POST(req: NextRequest) {;
-  console.log("⏳ Setting up UltraPlonk session...");
+  const stream = new ReadableStream({
+    start(controller) {
+      global.sendSSEMessage = (message: string) => {
+        controller.enqueue(encoder.encode(`data: ${message}\n\n`));
+      };
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    },
+  });
+}
+
+export async function POST(req: NextRequest) {
   //
   // >>>>> TODO: FIX BUG HERE IN IMPORT ULTRA PLONK BACKEND FROM AZTEC.JS WASM <<<<<<
   //
@@ -29,55 +50,52 @@ export async function POST(req: NextRequest) {;
   // syscall: 'open',
   // path: '[project]/node_modules/@aztec/bb.js/dest/node/barretenberg_wasm/fetch_code/node/index.js [app-route] (ecmascript)/../../barretenberg-threads.wasm.gz'
   // }
-  // 
+  //
   // POST /api/submit-proof 500 in 219ms
   //
-  const { UltraPlonkBackend } = await import("@aztec/bb.js");
-  const circuit = await import("../../../../public/circuit.json");
-  const backend = new UltraPlonkBackend(circuit.bytecode);
+  // const { UltraPlonkBackend } = await import("@aztec/bb.js");
+  // const circuit = await import("../../../../public/circuit.json");
+  // const backend = new UltraPlonkBackend(circuit.bytecode);
+
+  let id: number | undefined;
 
   try {
-    console.log("✅ Received request to submit proof");
+    emitSSE(
+      "📩 Recebi a requisição para submeter prova...",
+      MessageTypeSSE.SUCCESS
+    );
+
     const rawBody = await req.text();
     const body = JSON.parse(rawBody);
     const { proof, publicInputs, vk } = body;
 
-    const proofUint8 = Uint8Array.from(Object.values(proof));
-    const vkUint8 = Uint8Array.from(Object.values(vk));
-
-
     if (!proof || !publicInputs || !vk) {
       return NextResponse.json(
-        {
-          error: "Missing required fields: proofHex, publicInputs, vkHex",
-        },
+        { error: "Campos obrigatórios ausentes: proof, publicInputs, vk" },
         { status: 400 }
       );
     }
 
-    console.log("⌛ Verifying proof locally...");
-    const result = await verifyProof(backend, proof);
+    const result = await verifyProof(proof);
+
     if (!result) {
       return NextResponse.json(
-        { error: "Proof verification failed" },
+        { error: "Falha na verificação da prova" },
         { status: 400 }
       );
     }
-    console.log("✅ Proof verified successfully");
 
-    console.log("⏳ Converting proof to hex...");
-
-    console.log("⏳ Submitting proof to zkVerify...");
-    const response = await submitProofToZkVerify(proof, publicInputs, vk);
+    const { proofHex, vkHex } = convertProofToHex(proof, vk);
+    const response = await submitProofToZkVerify(proofHex, publicInputs, vkHex);
 
     return NextResponse.json(
-      { message: "Proof submitted successfully", response },
+      { message: "Prova enviada com sucesso", response },
       { status: 200 }
     );
   } catch (err: any) {
-    console.error("💔 Error submitting proof:", err);
+    emitSSE(`❌ Erro ao submeter prova: ${err.message}`, MessageTypeSSE.ERROR);
     return NextResponse.json(
-      { error: "Failed to submit proof", details: err.message },
+      { error: "Falha ao submeter prova", details: err.message },
       { status: 500 }
     );
   }

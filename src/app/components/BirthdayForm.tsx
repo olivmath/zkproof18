@@ -2,13 +2,15 @@
 import React, { useState } from "react";
 import { generateProof } from "../services/generateProof";
 
-
 export function BirthdayForm() {
   const [birthdate, setBirthdate] = useState("1997-04-30");
+  const [isClicked, setIsClicked] = useState(false);
 
   const handleClick = async () => {
+    setIsClicked(true);
     const year = new Date(birthdate).getFullYear();
     await generateProof(year);
+    setTimeout(() => setIsClicked(false), 200); // Remove a animação após 200ms
   };
 
   return (
@@ -33,7 +35,9 @@ export function BirthdayForm() {
         />
         <button
           onClick={handleClick}
-          className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold hover:opacity-90 transition-opacity"
+          className={`px-6 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold hover:opacity-90 transition-transform duration-150 ${
+            isClicked ? "scale-80" : "scale-100"
+          }`}
         >
           Generate Proof
         </button>

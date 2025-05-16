@@ -13,8 +13,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = 3001;
 
-const SEED =
-  "process symptom pen humor shrimp enjoy sort setup castle abuse attitude tape";
+const SEED = process.env.SEED;
 
 app.use(
   cors({
@@ -116,6 +115,8 @@ app.listen(port, () => {
 
 const submitProofToZkVerify = async (proofHex, publicInputs, vkHex) => {
   const session = await zkVerifySession.start().Volta().withAccount(SEED);
+
+  console.table({ proofHex, publicInputs, vkHex });
 
   const { events } = await session
     .verify()

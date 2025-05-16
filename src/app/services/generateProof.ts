@@ -3,7 +3,7 @@ import { MessageSSE, MessageTypeSSE } from "../utils/types";
 import { sleep } from "../utils/timer";
 
 export const generateProof = async (birthYear: number) => {
-  const BACKEND = "https://thirty-ghosts-enter.loca.lt";
+  const BACKEND = "";
   let id;
   try {
     id = toast.loading("Configurando sessão...");

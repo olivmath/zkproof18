@@ -3,6 +3,7 @@ import { MessageSSE, MessageTypeSSE } from "../utils/types";
 import { sleep } from "../utils/timer";
 
 export const generateProof = async (birthYear: number) => {
+  const BACKEND = "https://thirty-ghosts-enter.loca.lt";
   let id;
   try {
     id = toast.loading("Configurando sessão...");
@@ -34,7 +35,7 @@ export const generateProof = async (birthYear: number) => {
     toast.dismiss(id);
     toast.success("Verificação de chave gerada");
 
-    const eventSource = new EventSource("/api/submit-proof");
+    const eventSource = new EventSource(BACKEND);
 
     eventSource.onmessage = (event) => {
       const data: MessageSSE = JSON.parse(event.data);
@@ -57,23 +58,29 @@ export const generateProof = async (birthYear: number) => {
       toast.error("Conexão com servidor perdida");
     };
 
-    toast.loading("Submetendo prova para backend...");
     toast.success("✅ Seus dados estão seguros 🔐");
+    toast.loading("Submetendo prova para backend...");
     await sleep(2000);
-    const response = await fetch("/api/submit-proof", {
+
+    const result = await backend.verifyProof({proof, publicInputs})
+    toast.success("Verify"+ result.toString())
+
+    const response = await fetch(BACKEND, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        proof,
-        publicInputs: publicInputs[0],
-        vk,
+          publicInputs: publicInputs[0],
+          proof: Array.from(proof),
+          vk: Array.from(vk),
       }),
     });
 
     toast.dismiss();
     toast.success("Prova enviada com sucesso!");
     if (!response.ok) {
-      throw new Error("Falha ao enviar prova");
+      toast.dismiss();
+      toast.error("Falha ao enviar prova");
+      console.error(response.text)
     }
 
     eventSource.close();

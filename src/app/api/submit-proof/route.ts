@@ -26,37 +26,10 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  //
-  // >>>>> TODO: FIX BUG HERE IN IMPORT ULTRA PLONK BACKEND FROM AZTEC.JS WASM <<<<<<
-  //
-  // ⨯ Error: ENOENT: no such file or directory, open '[project]/node_modules/@aztec/bb.js/dest/node/barretenberg_wasm/fetch_code/node/index.js [app-route] (ecmascript)/../../barretenberg-threads.wasm.gz'
-  //   at async fetchCode (../../../../../src/barretenberg_wasm/fetch_code/node/index.ts:19:25)
-  //   at async fetchModuleAndThreads (../../../src/barretenberg_wasm/index.ts:17:15)
-  //   at async BarretenbergSync.new (../../../src/barretenberg/index.ts:102:32)
-  //   at async eval (../../../src/barretenberg/index.ts:156:0) {
-  // errno: -2,
-  // code: 'ENOENT',
-  // syscall: 'open',
-  // path: '[project]/node_modules/@aztec/bb.js/dest/node/barretenberg_wasm/fetch_code/node/index.js [app-route] (ecmascript)/../../barretenberg-threads.wasm.gz'
-  // }
-  //
-  // ⨯ Error: ENOENT: no such file or directory, open '[project]/node_modules/@aztec/bb.js/dest/node/barretenberg_wasm/fetch_code/node/index.js [app-route] (ecmascript)/../../barretenberg-threads.wasm.gz'
-  //   at async fetchCode (../../../../../src/barretenberg_wasm/fetch_code/node/index.ts:19:25)
-  //   at async fetchModuleAndThreads (../../../src/barretenberg_wasm/index.ts:17:15)
-  //   at async BarretenbergSync.new (../../../src/barretenberg/index.ts:102:32)
-  //   at async eval (../../../src/barretenberg/index.ts:156:0) {
-  // errno: -2,
-  // code: 'ENOENT',
-  // syscall: 'open',
-  // path: '[project]/node_modules/@aztec/bb.js/dest/node/barretenberg_wasm/fetch_code/node/index.js [app-route] (ecmascript)/../../barretenberg-threads.wasm.gz'
-  // }
-  //
-  // POST /api/submit-proof 500 in 219ms
-  //
-  // const { UltraPlonkBackend } = await import("@aztec/bb.js");
-  // const circuit = await import("../../../../public/circuit.json");
+  const { UltraPlonkBackend } = await import("@aztec/bb.js");
+  const circuit = await import("../../../../public/circuit.json");
 
-  // const backend = new UltraPlonkBackend(circuit.bytecode);
+  const backend = new UltraPlonkBackend(circuit.bytecode);
 
   let id: number | undefined;
 

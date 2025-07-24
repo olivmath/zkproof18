@@ -1,9 +1,9 @@
 import { toast } from "sonner";
 import { MessageSSE, MessageTypeSSE } from "../utils/types";
-import { sleep } from "../utils/timer";
 
 export const generateProof = async (birthYear: number) => {
-  const BACKEND = "";
+  // const BACKEND = "http://localhost:3001";
+  const BACKEND = "/api/submit-proof"; // server-side
   let id;
   try {
     id = toast.loading("Configurando sessão...");
@@ -59,28 +59,37 @@ export const generateProof = async (birthYear: number) => {
     };
 
     toast.success("✅ Seus dados estão seguros 🔐");
-    toast.loading("Submetendo prova para backend...");
-    await sleep(2000);
+    id = toast.loading("Submetendo prova para backend...");
 
-    const result = await backend.verifyProof({proof, publicInputs})
-    toast.success("Verify"+ result.toString())
+    try {
+      const result = await backend.verifyProof({proof, publicInputs})
+      toast.success("Verify"+ result.toString())
 
-    const response = await fetch(BACKEND, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-          publicInputs: publicInputs[0],
-          proof: Array.from(proof),
-          vk: Array.from(vk),
-      }),
-    });
+      const response = await fetch(BACKEND, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            publicInputs: publicInputs[0],
+            proof: Array.from(proof),
+            vk: Array.from(vk),
+        }),
+      });
 
-    toast.dismiss();
-    toast.success("Prova enviada com sucesso!");
-    if (!response.ok) {
       toast.dismiss();
-      toast.error("Falha ao enviar prova");
-      console.error(response.text)
+      if (!response.ok) {
+        toast.error("Falha ao enviar prova");
+        console.error("Falha ao enviar prova");
+        console.error(response.text)
+        eventSource.close();
+        return;
+      }
+      toast.success("Prova enviada com sucesso!");
+      eventSource.close();
+    } catch (err: any) {
+      toast.dismiss();
+      toast.error("Erro ao enviar prova: " + err.message);
+      eventSource.close();
+      return;
     }
 
     eventSource.close();

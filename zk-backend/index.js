@@ -14,7 +14,8 @@ const app = express();
 const port = 3001;
 
 // Configuration
-const SEED = process.env.SEED
+const SEED =
+  "cry twist toddler village rug cradle hammer immense boost sunset butter situate";
 
 // Initialize zkVerify session
 let session;
@@ -33,11 +34,7 @@ try {
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "http://127.0.0.1:3000",
-      "https://f9a4-2804-1530-44d-2600-4cd9-efe6-f6c6-5dc7.ngrok-free.app",
-    ],
+    origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: [
       "Content-Type",
@@ -83,7 +80,7 @@ app.post("/", async (req, res) => {
     }
 
     // Carrega o circuito do disco
-    const circuitPath = path.join(__dirname, "../public/circuit.json");
+    const circuitPath = path.join(__dirname, "./public/circuit.json");
     const circuit = JSON.parse(fs.readFileSync(circuitPath, "utf-8"));
     const backend = new UltraPlonkBackend(circuit.bytecode);
 
@@ -98,9 +95,10 @@ app.post("/", async (req, res) => {
       return res.status(400).json({ error: "Falha na verificação da prova" });
     }
 
-    const proofHex = convertProof(proof)
-    const vkHex = convertVerificationKey(vk)
+    const proofHex = convertProof(proof, 1);
+    const vkHex = convertVerificationKey(vk);
 
+    console.log("Enviando prova para blockchain...");
     const response = await submitProofToZkVerify(proofHex, publicInputs, vkHex);
 
     return res.status(200).json({
@@ -120,15 +118,14 @@ app.post("/", async (req, res) => {
 // Inicia o servidor
 app.listen(port, () => {
   console.log(
-    `🚀 Servidor de verificação de provas ZK rodando em http://localhost:${port}`
+    `🚀 Servidor de verificação de provas ZK rodando em http://0.0.0.0:${port}`
   );
 });
 
 const submitProofToZkVerify = async (proofHex, publicInputs, vkHex) => {
-
   const { events } = await session
     .verify()
-    .ultraplonk()
+    .ultraplonk({ numberOfPublicInputs: 1 })
     .execute({
       proofData: { proof: proofHex, vk: vkHex, publicSignals: publicInputs },
     });
@@ -136,38 +133,47 @@ const submitProofToZkVerify = async (proofHex, publicInputs, vkHex) => {
   return new Promise((resolve) => {
     events.on(ZkVerifyEvents.Finalized, (data) => {
       console.log("Proof finalized on zkVerify. ✅", data);
-      
+
       // Extrair o txHash da resposta da transação
       let txHash = "0x123abc"; // fallback
-      
+
       if (data?.extrinsic?.hash) {
         txHash = data.extrinsic.hash;
       } else if (data?.txHash) {
         txHash = data.txHash;
       } else if (data?.hash) {
         txHash = data.hash;
-      } else if (typeof data === 'string' && data.startsWith('0x')) {
+      } else if (typeof data === "string" && data.startsWith("0x")) {
         txHash = data;
-      } else if (data && typeof data === 'object') {
+      } else if (data && typeof data === "object") {
         // Tentar encontrar o hash em diferentes propriedades
-        const possibleHashProps = ['hash', 'txHash', 'extrinsicHash', 'transactionHash'];
+        const possibleHashProps = [
+          "hash",
+          "txHash",
+          "extrinsicHash",
+          "transactionHash",
+        ];
         for (const prop of possibleHashProps) {
-          if (data[prop] && typeof data[prop] === 'string' && data[prop].startsWith('0x')) {
+          if (
+            data[prop] &&
+            typeof data[prop] === "string" &&
+            data[prop].startsWith("0x")
+          ) {
             txHash = data[prop];
             break;
           }
         }
       }
-      
+
       console.log("Extracted txHash:", txHash);
       resolve({ status: "ok", txId: txHash });
     });
-    
+
     events.on(ZkVerifyEvents.Error, (error) => {
       console.error("Error in zkVerify transaction:", error);
       resolve({ status: "error", error: error.message });
     });
-    
+
     // Timeout para evitar que a promise fique pendente indefinidamente
     setTimeout(() => {
       console.warn("Timeout waiting for transaction finalization");

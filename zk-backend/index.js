@@ -14,9 +14,7 @@ const app = express();
 const port = 3001;
 
 // Configuration
-const SEED =
-  process.env.SEED ||
-  "cry twist toddler village rug cradle hammer immense boost sunset butter situate";
+const SEED = process.env.SEED
 
 // Initialize zkVerify session
 let session;
@@ -127,7 +125,6 @@ app.listen(port, () => {
 });
 
 const submitProofToZkVerify = async (proofHex, publicInputs, vkHex) => {
-  const session = await zkVerifySession.start().Volta().withAccount(SEED);
 
   const { events } = await session
     .verify()

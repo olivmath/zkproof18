@@ -17,6 +17,9 @@ importers:
       nodemon:
         specifier: ^3.0.3
         version: 3.1.10
+      olivmath-ultraplonk-zk-verify:
+        specifier: 0.2.0
+        version: 0.2.0
       zkverifyjs:
         specifier: ^0.12.1
         version: 0.12.1(@polkadot/util-crypto@13.4.4(@polkadot/util@13.4.4))(@polkadot/util@13.4.4)(typescript@5.8.3)(zod@3.24.4)
@@ -797,6 +800,9 @@ packages:
   object-inspect@1.13.4:
     resolution: {integrity: sha512-W67iLl4J2EXEGTbfeHCffrjDfitvLANg0UlX3wFUUSTx92KXRFegMHUVgSqE+wvhAbi4WqjGg9czysTV2Epbew==}
     engines: {node: '>= 0.4'}
+
+  olivmath-ultraplonk-zk-verify@0.2.0:
+    resolution: {integrity: sha512-0/ZFN109tAwajglWCBtNzJVaWP/pAQNuFEKfAPTYKRyacFjFTkvHl3bu13BH3w1UURlrpwOscpxtRO1yDkrmZw==}
 
   on-finished@2.4.1:
     resolution: {integrity: sha512-oVlzkg3ENAhCk2zdv7IJwd/QUD4z2RxRwpkcGY8psCVcCYZNq4wYnVWALHM+brtuJjePWiYF/ClmuDr8Ch5+kg==}
@@ -2122,6 +2128,8 @@ snapshots:
   object-assign@4.1.1: {}
 
   object-inspect@1.13.4: {}
+
+  olivmath-ultraplonk-zk-verify@0.2.0: {}
 
   on-finished@2.4.1:
     dependencies:

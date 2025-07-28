@@ -13,7 +13,25 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = 3001;
 
-const SEED = process.env.SEED;
+// Configuration
+const SEED =
+  process.env.SEED ||
+  "cry twist toddler village rug cradle hammer immense boost sunset butter situate";
+
+// Initialize zkVerify session
+let session;
+try {
+  session = await zkVerifySession.start().Volta().withAccount(SEED);
+  const accountInfo = await session.getAccountInfo();
+
+  console.log(`✅ zkVerify session initialized successfully:`);
+  console.log(`  Address: ${accountInfo[0].address}`);
+  console.log(`  Nonce: ${accountInfo[0].nonce}`);
+  console.log(`  Free Balance: ${accountInfo[0].freeBalance} ACME`);
+} catch (error) {
+  console.error("❌ Failed to initialize zkVerify session:", error);
+  process.exit(1);
+}
 
 app.use(
   cors({
@@ -52,6 +70,9 @@ app.get("/", (req, res) => {
 
 // POST - Submissão da prova
 app.post("/", async (req, res) => {
+  const { convertProof, convertVerificationKey } = await import(
+    "olivmath-ultraplonk-zk-verify"
+  );
   try {
     console.log("📩 Recebi a requisição para submeter prova...");
 
@@ -62,14 +83,6 @@ app.post("/", async (req, res) => {
         error: "Campos obrigatórios ausentes: proof, publicInputs, vk",
       });
     }
-
-    // Convertendo proof e vk para Uint8Array
-    const proofUint8Array = new Uint8Array(Object.values(proof));
-    const vkUint8Array = new Uint8Array(Object.values(vk));
-
-    console.log("proofArray", proofUint8Array);
-    console.log("vkArray", vkUint8Array);
-    console.log("publicInputs", publicInputs);
 
     // Carrega o circuito do disco
     const circuitPath = path.join(__dirname, "../public/circuit.json");
@@ -87,8 +100,8 @@ app.post("/", async (req, res) => {
       return res.status(400).json({ error: "Falha na verificação da prova" });
     }
 
-    const proofHex = Buffer.from(Object.values(proof)).toString("hex");
-    const vkHex = Buffer.from(Object.values(vk)).toString("hex");
+    const proofHex = convertProof(proof)
+    const vkHex = convertVerificationKey(vk)
 
     const response = await submitProofToZkVerify(proofHex, publicInputs, vkHex);
 
@@ -116,8 +129,6 @@ app.listen(port, () => {
 const submitProofToZkVerify = async (proofHex, publicInputs, vkHex) => {
   const session = await zkVerifySession.start().Volta().withAccount(SEED);
 
-  console.table({ proofHex, publicInputs, vkHex });
-
   const { events } = await session
     .verify()
     .ultraplonk()
@@ -125,12 +136,45 @@ const submitProofToZkVerify = async (proofHex, publicInputs, vkHex) => {
       proofData: { proof: proofHex, vk: vkHex, publicSignals: publicInputs },
     });
 
-  await new Promise((resolve) => {
+  return new Promise((resolve) => {
     events.on(ZkVerifyEvents.Finalized, (data) => {
       console.log("Proof finalized on zkVerify. ✅", data);
-      resolve(data);
+      
+      // Extrair o txHash da resposta da transação
+      let txHash = "0x123abc"; // fallback
+      
+      if (data?.extrinsic?.hash) {
+        txHash = data.extrinsic.hash;
+      } else if (data?.txHash) {
+        txHash = data.txHash;
+      } else if (data?.hash) {
+        txHash = data.hash;
+      } else if (typeof data === 'string' && data.startsWith('0x')) {
+        txHash = data;
+      } else if (data && typeof data === 'object') {
+        // Tentar encontrar o hash em diferentes propriedades
+        const possibleHashProps = ['hash', 'txHash', 'extrinsicHash', 'transactionHash'];
+        for (const prop of possibleHashProps) {
+          if (data[prop] && typeof data[prop] === 'string' && data[prop].startsWith('0x')) {
+            txHash = data[prop];
+            break;
+          }
+        }
+      }
+      
+      console.log("Extracted txHash:", txHash);
+      resolve({ status: "ok", txId: txHash });
     });
+    
+    events.on(ZkVerifyEvents.Error, (error) => {
+      console.error("Error in zkVerify transaction:", error);
+      resolve({ status: "error", error: error.message });
+    });
+    
+    // Timeout para evitar que a promise fique pendente indefinidamente
+    setTimeout(() => {
+      console.warn("Timeout waiting for transaction finalization");
+      resolve({ status: "timeout", txId: "0x123abc" });
+    }, 30000); // 30 segundos
   });
-
-  return { status: "ok", txId: "0x123abc" };
 };

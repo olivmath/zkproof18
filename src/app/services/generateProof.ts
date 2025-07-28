@@ -1,44 +1,92 @@
 import { toast } from "sonner";
 import { MessageSSE, MessageTypeSSE } from "../utils/types";
 
-export const generateProof = async (birthYear: number) => {
-  // const BACKEND = "http://localhost:3001";
-  const BACKEND = "/api/submit-proof"; // server-side
-  let id;
+export interface ProofProgress {
+  currentStep: number;
+  totalSteps: number;
+  stepName: string;
+  message: string;
+}
+
+export interface ProofResult {
+  success: boolean;
+  txHash?: string;
+  error?: string;
+}
+
+export const generateProof = async (
+  birthYear: number,
+  onProgress?: (progress: ProofProgress) => void
+): Promise<ProofResult> => {
+  const BACKEND = "http://localhost:3001";
+  // const BACKEND = "/api/submit-proof"; // server-side
+  
+  const steps = [
+    "Configurando sessão...",
+    "Carregando circuito...",
+    "Gerando witness...",
+    "Gerando prova criptográfica...",
+    "Gerando chave de verificação...",
+    "Verificando prova localmente...",
+    "Submetendo para blockchain...",
+    "Finalizando transação..."
+  ];
+  
+  const totalSteps = steps.length;
+  let currentStep = 0;
+
+  const updateProgress = (stepName: string, message: string) => {
+    currentStep++;
+    onProgress?.({
+      currentStep,
+      totalSteps,
+      stepName,
+      message
+    });
+  };
+
   try {
-    id = toast.loading("Configurando sessão...");
+    // Etapa 1: Configurando sessão
+    updateProgress(steps[0], "Inicializando bibliotecas...");
     const { UltraPlonkBackend } = await import("@aztec/bb.js");
     const { Noir } = await import("@noir-lang/noir_js");
-    const res = await fetch("/circuit.json");
     
+    // Etapa 2: Carregando circuito
+    updateProgress(steps[1], "Baixando circuito...");
+    const res = await fetch("/circuit.json");
     const circuit = await res.json();
     const noir = new Noir(circuit);
     const backend = new UltraPlonkBackend(circuit.bytecode);
 
-    toast.dismiss(id);
-    toast.success("Sessão configurada");
-
+    // Etapa 3: Gerando witness
+    updateProgress(steps[2], "Calculando witness...");
     const { witness } = await noir.execute({
       birth_year: birthYear,
       current_year: 2025,
     });
 
-    toast.success("Witness gerado");
-
-    id = toast.loading("Gerando prova...");
+    // Etapa 4: Gerando prova
+    updateProgress(steps[3], "Gerando prova criptográfica...");
     const { proof, publicInputs } = await backend.generateProof(witness);
-    toast.dismiss(id);
-    toast.success("Prova gerada");
 
-    id = toast.loading("Gerando chave de verificação...");
+    // Etapa 5: Gerando chave de verificação
+    updateProgress(steps[4], "Gerando chave de verificação...");
     const vk = await backend.getVerificationKey();
-    toast.dismiss(id);
-    toast.success("Verificação de chave gerada");
 
+    // Etapa 6: Verificando prova localmente
+    updateProgress(steps[5], "Verificando prova localmente...");
+    const localVerification = await backend.verifyProof({proof, publicInputs});
+    if (!localVerification) {
+      throw new Error("Falha na verificação local da prova");
+    }
+
+    // Configurando SSE para comunicação em tempo real
     const eventSource = new EventSource(BACKEND);
+    let sseMessages: string[] = [];
 
     eventSource.onmessage = (event) => {
       const data: MessageSSE = JSON.parse(event.data);
+      sseMessages.push(data.message);
 
       switch (data.type) {
         case MessageTypeSSE.INFO:
@@ -58,43 +106,47 @@ export const generateProof = async (birthYear: number) => {
       toast.error("Conexão com servidor perdida");
     };
 
-    toast.success("✅ Seus dados estão seguros 🔐");
-    id = toast.loading("Submetendo prova para backend...");
+    // Etapa 7: Submetendo para blockchain
+    updateProgress(steps[6], "Enviando prova para blockchain...");
+    
+    const response = await fetch(BACKEND, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+          publicInputs: publicInputs[0],
+          proof: Array.from(proof),
+          vk: Array.from(vk),
+      }),
+    });
 
-    try {
-      const result = await backend.verifyProof({proof, publicInputs})
-      toast.success("Verify"+ result.toString())
-
-      const response = await fetch(BACKEND, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            publicInputs: publicInputs[0],
-            proof: Array.from(proof),
-            vk: Array.from(vk),
-        }),
-      });
-
-      toast.dismiss();
-      if (!response.ok) {
-        toast.error("Falha ao enviar prova");
-        console.error("Falha ao enviar prova");
-        console.error(response.text)
-        eventSource.close();
-        return;
-      }
-      toast.success("Prova enviada com sucesso!");
-      eventSource.close();
-    } catch (err: any) {
-      toast.dismiss();
-      toast.error("Erro ao enviar prova: " + err.message);
-      eventSource.close();
-      return;
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Falha ao enviar prova: ${errorText}`);
     }
 
+    const result = await response.json();
+    
+    // Etapa 8: Finalizando
+    updateProgress(steps[7], "Transação finalizada!");
+    
     eventSource.close();
+    
+    if (result.response && result.response.txId) {
+      toast.success("✅ Prova enviada com sucesso para a blockchain zkVerify!");
+      return {
+        success: true,
+        txHash: result.response.txId
+      };
+    } else {
+      throw new Error("Resposta inválida do servidor");
+    }
+
   } catch (err: any) {
     toast.error("Erro ao gerar prova: " + err.message);
     console.error("💔 Proof generation failed:", err);
+    return {
+      success: false,
+      error: err.message
+    };
   }
 };

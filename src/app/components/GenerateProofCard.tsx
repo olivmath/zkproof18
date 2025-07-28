@@ -53,17 +53,17 @@ export function GenerateProofCard({ onSuccess, walletAddress }: { onSuccess: (da
   };
 
   return (
-    <div className="bg-[#111] border border-[#333] rounded-lg p-6 shadow-lg transition-all duration-200 hover:border-white hover:shadow-xl flex flex-col gap-4">
-      <div className="text-lg font-semibold mb-1">Generate Age Proof</div>
-      <div className="text-sm text-gray-400 mb-2">
+    <div className="card bg-neutral-900 border border-neutral-800 rounded-md p-6 transition-all duration-200 hover:border-white flex flex-col gap-4">
+      <div className="card-title text-base font-medium mb-1">Generate Age Proof</div>
+      <div className="card-description text-sm text-neutral-400 mb-2">
         Prove you're 18+ without revealing your actual age or birth date.
       </div>
-      <div className="flex flex-col gap-2 mb-2">
-        <label className="text-xs text-white uppercase tracking-wider mb-1" htmlFor="birthDate">Birth Date</label>
+      <div className="input-group flex flex-col gap-2 mb-2">
+        <label className="input-label text-xs text-white uppercase tracking-wider mb-1" htmlFor="birthDate">Birth Date</label>
         <input
           type="date"
           id="birthDate"
-          className="w-full bg-black border border-[#333] rounded-md px-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-white transition-all"
+          className="input-field w-full bg-neutral-950 border border-neutral-800 rounded-md px-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-white transition-all"
           value={birthDate}
           onChange={e => setBirthDate(e.target.value)}
           max={maxDate}
@@ -71,7 +71,7 @@ export function GenerateProofCard({ onSuccess, walletAddress }: { onSuccess: (da
         />
       </div>
       <button
-        className={`w-full rounded-md py-3 font-mono font-semibold text-sm uppercase tracking-wider transition-all duration-150 ${isGenerating ? 'bg-gray-700 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-white to-gray-300 text-black hover:from-gray-200 hover:to-white shadow-md'}`}
+        className={`btn w-full rounded-md py-4 font-mono font-semibold text-sm uppercase tracking-wider transition-all duration-150 ${isGenerating ? 'bg-neutral-800 text-neutral-400 cursor-not-allowed' : 'bg-white text-black hover:bg-neutral-200 shadow-md'}`}
         onClick={handleGenerate}
         disabled={isGenerating}
       >

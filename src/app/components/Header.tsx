@@ -2,9 +2,9 @@ import React from "react";
 
 export function Header() {
   return (
-    <div className="text-center mb-10 pt-10">
-      <div className="text-2xl font-bold tracking-widest mb-2">ZK_AGE_PROOF</div>
-      <div className="text-xs text-gray-500 uppercase tracking-wider">Zero Knowledge Identity</div>
+    <div className="header text-center mb-10 pt-10">
+      <div className="logo text-2xl font-bold mb-2 tracking-[0.18em]">ZK_AGE_PROOF</div>
+      <div className="tagline text-xs text-neutral-500 uppercase tracking-widest">Zero Knowledge Identity</div>
     </div>
   );
 } 

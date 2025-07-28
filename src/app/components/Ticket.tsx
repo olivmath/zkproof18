@@ -3,6 +3,11 @@ import React from "react";
 type TicketProps = {
   wallet: string;
   date: string;
+  nullifier?: string;
+  title?: string;
+  subtitle?: string;
+  status?: string;
+  statusColor?: string;
 };
 
 function shortWallet(address: string) {
@@ -10,32 +15,42 @@ function shortWallet(address: string) {
   return address.slice(0, 4) + '...' + address.slice(-4);
 }
 
-export function Ticket({ wallet, date }: TicketProps) {
+export function Ticket({ wallet, date, nullifier, title = 'AGE VERIFIED', subtitle = 'Zero Knowledge Proof', status = '18+ CONFIRMED', statusColor = 'text-green-600' }: TicketProps) {
   return (
-    <div className="bg-white text-black rounded-xl p-6 my-4 relative overflow-visible shadow-lg flex flex-col gap-4">
-      <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-black rounded-full" />
-      <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-black rounded-full" />
-      <div className="absolute inset-0 border-2 border-dashed border-black rounded-xl pointer-events-none" />
-      <div className="text-center border-b border-dashed border-black pb-4 mb-4">
-        <div className="text-lg font-bold tracking-widest mb-1">PROOF VERIFIED</div>
-        <div className="text-xs text-gray-500 uppercase tracking-wider">Valid Age Confirmation</div>
+    <div className="ticket bg-white text-black rounded-lg p-6 my-5 relative overflow-visible flex flex-col gap-4">
+      {/* Círculos laterais */}
+      <div className="ticket-border absolute inset-0 border-2 border-dashed border-black rounded-lg pointer-events-none" />
+      <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-5 h-5 bg-black rounded-full" />
+      <div className="absolute -right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 bg-black rounded-full" />
+      {/* Header */}
+      <div className="ticket-header text-center border-b border-dashed border-black pb-4 mb-4">
+        <div className="ticket-title text-lg font-bold tracking-widest mb-1">{title}</div>
+        <div className="ticket-subtitle text-xs text-neutral-500 uppercase tracking-wider">{subtitle}</div>
       </div>
-      <div className="flex flex-col gap-2">
+      {/* Corpo do ticket */}
+      <div className="ticket-body flex flex-col gap-2">
         <div>
-          <div className="text-[10px] text-gray-500 uppercase tracking-wider">Wallet</div>
-          <div className="text-base font-semibold">{shortWallet(wallet)}</div>
+          <div className="ticket-label text-[10px] text-neutral-500 uppercase tracking-wider">Wallet</div>
+          <div className="ticket-value text-base font-semibold font-mono">{shortWallet(wallet)}</div>
+        </div>
+        {nullifier && (
+          <div>
+            <div className="ticket-label text-[10px] text-neutral-500 uppercase tracking-wider">Nullifier</div>
+            <div className="ticket-value text-base font-semibold font-mono">{nullifier}</div>
+          </div>
+        )}
+        <div>
+          <div className="ticket-label text-[10px] text-neutral-500 uppercase tracking-wider">Status</div>
+          <div className={`ticket-value text-base font-semibold ${statusColor}`}>{status}</div>
         </div>
         <div>
-          <div className="text-[10px] text-gray-500 uppercase tracking-wider">Status</div>
-          <div className="text-base font-semibold text-green-600">18+ CONFIRMED</div>
-        </div>
-        <div>
-          <div className="text-[10px] text-gray-500 uppercase tracking-wider">Verified</div>
-          <div className="text-base font-semibold">{date}</div>
+          <div className="ticket-label text-[10px] text-neutral-500 uppercase tracking-wider">Verified</div>
+          <div className="ticket-value text-base font-semibold font-mono">{date}</div>
         </div>
       </div>
+      {/* Check verde */}
       <div className="flex justify-center mt-4">
-        <div className="w-14 h-14 bg-green-500 text-white rounded-full flex items-center justify-center text-3xl">✓</div>
+        <div className="check-icon w-16 h-16 bg-green-500 text-white rounded-full flex items-center justify-center text-4xl">✓</div>
       </div>
     </div>
   );

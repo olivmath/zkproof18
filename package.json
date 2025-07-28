@@ -12,6 +12,7 @@
     "@aztec/bb.js": "0.72.1",
     "@noir-lang/noir_js": "1.0.0-beta.2",
     "@tonconnect/ui-react": "^2.1.0",
+    "@zxing/browser": "^0.1.5",
     "next": "15.3.2",
     "qrcode.react": "^4.2.0",
     "react": "^19.0.0",

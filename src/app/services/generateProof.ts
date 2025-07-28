@@ -1,6 +1,4 @@
 import { toast } from "sonner";
-import { MessageSSE, MessageTypeSSE } from "../utils/types";
-
 export interface ProofProgress {
   currentStep: number;
   totalSteps: number;

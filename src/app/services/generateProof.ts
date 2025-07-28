@@ -79,36 +79,9 @@ export const generateProof = async (
       throw new Error("Falha na verificação local da prova");
     }
 
-    // Configurando SSE para comunicação em tempo real
-    const eventSource = new EventSource(BACKEND);
-    let sseMessages: string[] = [];
-
-    eventSource.onmessage = (event) => {
-      const data: MessageSSE = JSON.parse(event.data);
-      sseMessages.push(data.message);
-
-      switch (data.type) {
-        case MessageTypeSSE.INFO:
-          toast.info(data.message);
-          break;
-        case MessageTypeSSE.SUCCESS:
-          toast.success(data.message);
-          break;
-        case MessageTypeSSE.ERROR:
-          toast.error(data.message);
-          break;
-      }
-    };
-
-    eventSource.onerror = () => {
-      eventSource.close();
-      toast.error("Conexão com servidor perdida");
-    };
-
     // Etapa 7: Submetendo para blockchain
     updateProgress(steps[6], "Enviando prova para blockchain...");
     
-    console.log(BACKEND)
     const response = await fetch(BACKEND, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -129,8 +102,6 @@ export const generateProof = async (
     // Etapa 8: Finalizando
     updateProgress(steps[7], "Transação finalizada!");
     
-    eventSource.close();
-    
     if (result.response && result.response.txId) {
       toast.success("✅ Prova enviada com sucesso para a blockchain zkVerify!");
       return {
@@ -149,4 +120,4 @@ export const generateProof = async (
       error: err.message
     };
   }
-};
+}; 

@@ -18,8 +18,7 @@ export const generateProof = async (
   birthYear: number,
   onProgress?: (progress: ProofProgress) => void
 ): Promise<ProofResult> => {
-  const BACKEND = "http://localhost:3001";
-  // const BACKEND = "/api/submit-proof"; // server-side
+  const BACKEND = "http://127.0.0.1:3001";
   
   const steps = [
     "Configurando sessão...",
@@ -109,6 +108,7 @@ export const generateProof = async (
     // Etapa 7: Submetendo para blockchain
     updateProgress(steps[6], "Enviando prova para blockchain...");
     
+    console.log(BACKEND)
     const response = await fetch(BACKEND, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

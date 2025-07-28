@@ -1,6 +1,6 @@
 {
-  "name": "zk-template-v2",
-  "version": "0.9.0",
+  "name": "zkproof18",
+  "version": "0.10.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -12,10 +12,13 @@
     "@aztec/bb.js": "0.72.1",
     "@noir-lang/noir_js": "1.0.0-beta.2",
     "@tonconnect/ui-react": "^2.1.0",
+    "zkverifyjs": "^0.12.1",
     "next": "15.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "sonner": "^2.0.3"
+    "sonner": "^2.0.3",
+    "olivmath_ultraplonk_zk_verify": "file:./pkg"
+
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

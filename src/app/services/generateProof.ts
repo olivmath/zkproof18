@@ -2,8 +2,7 @@ import { toast } from "sonner";
 import { MessageSSE, MessageTypeSSE } from "../utils/types";
 
 export const generateProof = async (birthYear: number) => {
-  // const BACKEND = "http://localhost:3001";
-  const BACKEND = "/api/submit-proof"; // server-side
+  const BACKEND = "http://localhost:3001";
   let id;
   try {
     id = toast.loading("Configurando sessão...");

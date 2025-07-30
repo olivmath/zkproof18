@@ -34,3 +34,17 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+
+@frontend/ 
+
+corrija:
+
+
+1. TON WALLET CONNECTED: meu endereço não é 0:48ae...57fc e sim UQBIrvVE2rDT8eRTHYo9hGeZLxDqVHwKHeouYO3L6_5X_MBB
+2. No input precisa aparecer um calendario grande para facilitar o UX
+3. Tem 2 Toast aparecendo, deixe nenhum
+4. Remove o botao copy proof data
+5. Troque o campo "Nullifier: 0xd281cde0...abcd" por "STATUS: 18+ CONFIRMED"
+6. Adicione o botão de logout no top junto onde mostra a carteira

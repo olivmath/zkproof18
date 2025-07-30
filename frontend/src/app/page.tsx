@@ -2,15 +2,15 @@
 
 import { TonConnectButton, useTonWallet } from "@tonconnect/ui-react";
 import { TonConnectUIProvider } from "@tonconnect/ui-react";
-import { GameOfLife } from "./components/new-zk-components/GameOfLife";
-import { Header } from "./components/new-zk-components/Header";
-import { WalletStatus } from "./components/new-zk-components/WalletStatus";
-import { ActionSelector } from "./components/new-zk-components/ActionSelector";
-import { GenerateProofForm } from "./components/new-zk-components/GenerateProofForm";
-import { VerifyProofForm } from "./components/new-zk-components/VerifyProofForm";
-import { SuccessSection } from "./components/new-zk-components/SuccessSection";
-import { VerifySuccessSection } from "./components/new-zk-components/VerifySuccessSection";
-import { LoginScreen } from "./components/new-zk-components/LoginScreen";
+import { GameOfLife } from "./components/GameOfLife";
+import { Header } from "./components/Header";
+import { WalletStatus } from "./components/WalletStatus";
+import { ActionSelector } from "./components/ActionSelector";
+import { GenerateProofForm } from "./components/GenerateProofForm";
+import { VerifyProofForm } from "./components/VerifyProofForm";
+import { SuccessSection } from "./components/SuccessSection";
+import { VerifySuccessSection } from "./components/VerifySuccessSection";
+import { LoginScreen } from "./components/LoginScreen";
 import { useState } from "react";
 import { Toaster } from "sonner";
 

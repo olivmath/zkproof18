@@ -15,41 +15,23 @@ app.use(morgan('dev'));
 app.use(cors());
 app.use(express.json());
 
-// Validate proof data middleware
-const validateProofData = (data) => {
-  // Check if data exists and has required properties
-  if (!data || typeof data !== 'object') {
-    return false;
-  }
 
-  // Validate publicInputs
-  if (!data.publicInputs || !Array.isArray(data.publicInputs)) {
-    return false;
-  }
-
-  // Validate proof
-  if (!data.proof || !Array.isArray(data.proof)) {
-    return false;
-  }
-
-  // Validate vk
-  if (!data.vk || !Array.isArray(data.vk)) {
-    return false;
-  }
-
-  return true;
-};
 
 // Rota POST
 app.post('/api/verify', (req, res) => {
+  console.log("1. receive request")
   const input = req.body;
   
-  // Ensure input validation happens before any processing
-  if (!input || !validateProofData(input)) {
+  console.log("2. validate input")
+  if (!input || !input.publicInputs || !input.proof || !input.vk) {
     return res.status(400).json({
       error: "Invalid proof data"
     });
   }
+
+  console.log("3. show data")
+  console.log(input)
+
 
   res.status(200).json({
     message: 'Data received successfully!',

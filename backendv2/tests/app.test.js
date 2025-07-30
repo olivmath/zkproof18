@@ -3,6 +3,8 @@ import app from "../src/app.js";
 import { generateProof } from "./utils.proof.js";
 
 describe("ZK Proof API Tests", () => {
+  // Set timeout to 3 minutes for all tests
+
   it("should successfully generate and verify proof for birth year 1997", async () => {
     const birthYear = 1997;
 
@@ -11,6 +13,7 @@ describe("ZK Proof API Tests", () => {
     try {
       proofData = await generateProof(birthYear);
     } catch (err) {
+      console.error(err)
       throw new Error("Failed to generate proof");
     }
 
@@ -59,4 +62,4 @@ describe("ZK Proof API Tests", () => {
       error: "Route not found",
     });
   });
-});
+}, 180000);

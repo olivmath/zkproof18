@@ -1,17 +1,18 @@
 export const generateProof = async (birthYear) => {
-  // 1. import
+  console.log("1. import")
   const { UltraPlonkBackend } = await import("@aztec/bb.js");
   const { Noir } = await import("@noir-lang/noir_js");
 
-  // 2. load circuit
-  const res = "./circuit.json";
-  const circuit = await res.json();
+  console.log("2. load circuit")
+  const res = await import("../public/circuit.json");
+  const circuit = res.default;
 
-  // 3. setup
+  console.log("3. setup")
   const noir = new Noir(circuit);
   const backend = new UltraPlonkBackend(circuit.bytecode);
 
-  // 4. pre-validate input
+  console.log("4. pre-validate input")
+  const currentYear = new Date().getFullYear();
   const age = currentYear - birthYear;
   if (age < 18 || age > 100) {
     throw new Error(
@@ -19,20 +20,19 @@ export const generateProof = async (birthYear) => {
     );
   }
 
-  // 5. generate witness
-  const currentYear = new Date().getFullYear();
+  console.log("5. generate witness")
   const { witness } = await noir.execute({
     birth_year: birthYear,
     current_year: currentYear,
   });
 
-  // 6. generate proof
+  console.log("6. generate proof")
   const { proof, publicInputs } = await backend.generateProof(witness);
 
-  // 7. get verification key
+  console.log("7. get verification key")
   const vk = await backend.getVerificationKey();
 
-  // 8. verify proof
+  console.log("8. verify proof")
   const result = await backend.verifyProof({ proof, publicInputs });
   if (!result) {
     throw new Error("Proof verification failed");

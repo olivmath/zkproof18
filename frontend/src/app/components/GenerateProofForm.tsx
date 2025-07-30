@@ -41,8 +41,10 @@ const DatePicker = ({
   };
 
   const isDateDisabled = (date: Date) => {
-    // Permite qualquer data - a validação de idade será feita no submit
-    return false;
+    const currentYear = new Date().getFullYear();
+    const age = currentYear - date.getFullYear();
+    // Disable dates that would result in age < 18 or age > 100
+    return age < 18 || age > 100;
   };
 
   const handleDateSelect = (day: number) => {
@@ -170,15 +172,19 @@ const DatePicker = ({
      for (let day = 1; day <= daysInMonth; day++) {
        const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
        const isSelected = value === formatDate(date);
+       const isDisabled = isDateDisabled(date);
       
              calendarDays.push(
          <button
            key={day}
-           onClick={() => handleDateSelect(day)}
+           onClick={() => !isDisabled && handleDateSelect(day)}
+           disabled={isDisabled}
            className={`
              h-8 w-8 rounded text-xs font-mono transition-all
              ${isSelected
                ? 'bg-white text-black'
+               : isDisabled
+               ? 'text-gray-600 cursor-not-allowed'
                : 'text-white hover:bg-gray-700'
              }
            `}
@@ -279,6 +285,7 @@ export const GenerateProofForm = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState("");
+  const [error, setError] = useState("");
 
   const handleGenerateProof = async () => {
     if (!birthDate) {
@@ -289,27 +296,40 @@ export const GenerateProofForm = ({
     const today = new Date();
     const age = today.getFullYear() - birth.getFullYear();
 
+    // Validate age constraints before generating proof
     if (age < 18) {
+      setError("You must be at least 18 years old to generate a proof.");
+      return;
+    }
+
+    if (age > 100) {
+      setError("Age must be 100 years or less to generate a proof.");
       return;
     }
 
     setIsGenerating(true);
     setProgress(0);
     setProgressText("Setting up session...");
+    setError("");
 
+    let progressInterval: NodeJS.Timeout | null = null;
+    
     try {
       const birthYear = birth.getFullYear();
 
       const progressUpdates = [
-        { progress: 20, text: "Deriving wallet secret..." },
-        { progress: 40, text: "Generating nullifier..." },
-        { progress: 60, text: "Computing ZK proof..." },
-        { progress: 80, text: "Verifying on ZKVerify..." },
+        { progress: 12, text: "Loading circuit..." },
+        { progress: 25, text: "Generating witness..." },
+        { progress: 37, text: "Generating cryptographic proof..." },
+        { progress: 50, text: "Generating verification key..." },
+        { progress: 62, text: "Verifying proof locally..." },
+        { progress: 75, text: "Submitting to blockchain..." },
+        { progress: 87, text: "Finalizing transaction..." },
         { progress: 100, text: "Proof generated successfully!" },
       ];
 
       let currentStep = 0;
-      const progressInterval = setInterval(() => {
+      progressInterval = setInterval(() => {
         if (currentStep < progressUpdates.length) {
           const update = progressUpdates[currentStep];
           setProgress(update.progress);
@@ -318,9 +338,11 @@ export const GenerateProofForm = ({
         }
       }, 1000);
 
-      await generateProof(birthYear);
+      const result = await generateProof(birthYear);
 
-      clearInterval(progressInterval);
+      if (progressInterval) {
+        clearInterval(progressInterval);
+      }
       setProgress(100);
       setProgressText("Proof generated successfully!");
 
@@ -346,7 +368,11 @@ export const GenerateProofForm = ({
         onProofGenerated(proofData);
       }, 1000);
     } catch (error: any) {
+      if (progressInterval) {
+        clearInterval(progressInterval);
+      }
       setIsGenerating(false);
+      setError(error.message || "An unexpected error occurred");
     }
   };
 
@@ -357,7 +383,7 @@ export const GenerateProofForm = ({
     <Card>
       <div className="text-base font-medium mb-3">Generate Age Proof</div>
       <div className="text-sm text-gray-400 leading-relaxed mb-5">
-        Select your birth date to generate a zero-knowledge age proof. You must be 18+ to proceed.
+        Select your birth date to generate a zero-knowledge age proof. You must be between 18 and 100 years old to proceed.
       </div>
 
       <div className="mb-5">
@@ -389,6 +415,14 @@ export const GenerateProofForm = ({
           </div>
           <div className="text-xs text-gray-500 mt-2 text-center">
             {progressText}
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="mt-5 p-3 bg-red-900/20 border border-red-700 rounded">
+          <div className="text-red-400 text-sm font-mono">
+            Error: {error}
           </div>
         </div>
       )}

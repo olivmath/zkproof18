@@ -15,12 +15,12 @@ const port = 3001;
 
 const SEED = process.env.SEED;
 
+
 app.use(
   cors({
     origin: [
       "http://localhost:3000",
       "http://127.0.0.1:3000",
-      "https://f9a4-2804-1530-44d-2600-4cd9-efe6-f6c6-5dc7.ngrok-free.app",
     ],
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: [
@@ -34,21 +34,7 @@ app.use(
 
 app.use(express.json());
 
-// Global para armazenar função de envio SSE
-let sendSSEMessage = null;
 
-// GET - SSE endpoint
-app.get("/", (req, res) => {
-  res.set({
-    "Content-Type": "text/event-stream",
-    "Cache-Control": "no-cache",
-    Connection: "keep-alive",
-  });
-
-  sendSSEMessage = (message) => {
-    res.write(`data: ${message}\n\n`);
-  };
-});
 
 // POST - Submissão da prova
 app.post("/", async (req, res) => {
@@ -72,13 +58,13 @@ app.post("/", async (req, res) => {
     console.log("publicInputs", publicInputs);
 
     // Carrega o circuito do disco
-    const circuitPath = path.join(__dirname, "../public/circuit.json");
+    const circuitPath = path.join(__dirname, "./public/circuit.json");
     const circuit = JSON.parse(fs.readFileSync(circuitPath, "utf-8"));
     const backend = new UltraPlonkBackend(circuit.bytecode);
 
     console.log("Verificando prova...");
     const result = await backend.verifyProof({
-      proof,
+      proof: proofUint8Array,
       publicInputs: [publicInputs],
     });
     console.log("Resultado da verificação: ", result);

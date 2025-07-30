@@ -19,9 +19,9 @@ describe("ZK Proof API Tests", () => {
 
     // Prepare payload with proof data
     const payload = {
-      publicInputs: proofData.publicInputs,
+      publicInputs: Array.from(proofData.publicInputs),
       proof: proofData.proof,
-      vk: proofData.vk,
+      vk: Array.from(proofData.vk),
     };
 
     const response = await request(app)
@@ -31,10 +31,10 @@ describe("ZK Proof API Tests", () => {
       .expect("Content-Type", /json/);
 
     expect(response.body).toEqual({
-      message: "Proof verified successfully",
-      isValid: true,
+      message: "Proof verified successfully!",
+      verified: true,
     });
-  });
+  }, 180000);
 
   it("should return 400 for invalid proof data", async () => {
     const invalidPayload = {
@@ -62,4 +62,4 @@ describe("ZK Proof API Tests", () => {
       error: "Route not found",
     });
   });
-}, 180000);
+});

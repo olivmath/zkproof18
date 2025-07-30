@@ -29,8 +29,15 @@ export const generateProof = async (birthYear) => {
   console.log("6. generate proof")
   const { proof, publicInputs } = await backend.generateProof(witness);
 
+  
   console.log("7. get verification key")
   const vk = await backend.getVerificationKey();
+
+  console.log({
+    proof, 
+    publicInputs,
+    vk
+  })
 
   console.log("8. verify proof")
   const result = await backend.verifyProof({ proof, publicInputs });

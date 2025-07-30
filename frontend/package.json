@@ -11,6 +11,7 @@
   "dependencies": {
     "@aztec/bb.js": "0.72.1",
     "@noir-lang/noir_js": "1.0.0-beta.2",
+    "@ton/core": "^0.61.0",
     "@tonconnect/ui-react": "^2.1.0",
     "jsqr": "^1.4.0",
     "next": "15.3.2",

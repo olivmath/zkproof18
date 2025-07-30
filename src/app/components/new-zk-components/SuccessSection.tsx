@@ -6,7 +6,6 @@ import { Button } from './Button';
 import { ProofTicket } from './ProofTicket';
 import { QRCodeSection } from './QRCodeSection';
 import { useTonWallet } from '@tonconnect/ui-react';
-import { Address } from '@ton/core';
 
 interface SuccessSectionProps {
   proofData: any;
@@ -15,20 +14,10 @@ interface SuccessSectionProps {
 
 export const SuccessSection = ({ proofData, onNewProof }: SuccessSectionProps) => {
   const [isAddedToWallet, setIsAddedToWallet] = useState(false);
-
+  const [isCopied, setIsCopied] = useState(false);
   const wallet = useTonWallet();
 
-  // Função para converter endereço TON para formato user-friendly
-  const formatTonAddress = (address: string) => {
-    try {
-      const tonAddress = Address.parse(address);
-      return tonAddress.toString({ urlSafe: true, bounceable: false });
-    } catch (error) {
-      return address;
-    }
-  };
-
-  const walletAddress = wallet ? formatTonAddress(wallet.account.address) : 'UQB...7x2f';
+                  const walletAddress = wallet ? `${wallet.account.address.slice(0, 6)}...${wallet.account.address.slice(-4)}` : 'UQB...7x2f';
         const proofUrl = `https://zkverify.io/proof/${proofData.proofHash}`;
 
   const handleAddToWallet = () => {
@@ -49,7 +38,18 @@ export const SuccessSection = ({ proofData, onNewProof }: SuccessSectionProps) =
     setIsAddedToWallet(true);
   };
 
-
+  const handleShareProof = () => {
+    const mockProof = {
+      proof: "0x" + Array.from({length: 128}, () => Math.floor(Math.random() * 16).toString(16)).join(''),
+      nullifier: "0x" + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join(''),
+      timestamp: Date.now(),
+      verified: true
+    };
+    
+    navigator.clipboard.writeText(JSON.stringify(mockProof, null, 2));
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
 
   return (
     <Card>
@@ -57,6 +57,7 @@ export const SuccessSection = ({ proofData, onNewProof }: SuccessSectionProps) =
         title="AGE VERIFIED"
         subtitle="Zero Knowledge Proof"
         wallet={walletAddress}
+        nullifier={proofData.nullifier}
         date={proofData.verifiedDate}
       />
       
@@ -71,7 +72,13 @@ export const SuccessSection = ({ proofData, onNewProof }: SuccessSectionProps) =
         {isAddedToWallet ? 'ADDED TO WALLET ✓' : 'ADD TO WALLET'}
       </Button>
       
-
+      <Button 
+        variant="secondary" 
+        onClick={handleShareProof}
+        className="mb-3"
+      >
+        {isCopied ? 'COPIED!' : 'COPY PROOF DATA'}
+      </Button>
       
       <Button onClick={onNewProof}>
         GENERATE ANOTHER PROOF

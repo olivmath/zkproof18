@@ -2,7 +2,6 @@ import { Card } from './Card';
 import { Button } from './Button';
 import { ProofTicket } from './ProofTicket';
 import { useTonWallet } from '@tonconnect/ui-react';
-import { Address } from '@ton/core';
 
 interface VerifySuccessSectionProps {
   verificationData: any;
@@ -11,18 +10,7 @@ interface VerifySuccessSectionProps {
 
 export const VerifySuccessSection = ({ verificationData, onVerifyAnother }: VerifySuccessSectionProps) => {
   const wallet = useTonWallet();
-  
-  // Função para converter endereço TON para formato user-friendly
-  const formatTonAddress = (address: string) => {
-    try {
-      const tonAddress = Address.parse(address);
-      return tonAddress.toString({ urlSafe: true, bounceable: false });
-    } catch (error) {
-      return address;
-    }
-  };
-
-  const walletAddress = wallet ? formatTonAddress(wallet.account.address) : 'UQB...7x2f';
+  const walletAddress = wallet ? `${wallet.account.address.slice(0, 6)}...${wallet.account.address.slice(-4)}` : 'UQB...7x2f';
 
   return (
     <Card>
@@ -30,6 +18,7 @@ export const VerifySuccessSection = ({ verificationData, onVerifyAnother }: Veri
         title="PROOF VERIFIED"
         subtitle="Valid Age Confirmation"
         wallet={walletAddress}
+        nullifier={verificationData.nullifier}
         date={verificationData.verifiedDate}
         status={verificationData.status}
       />

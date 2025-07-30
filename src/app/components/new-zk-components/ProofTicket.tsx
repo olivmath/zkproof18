@@ -2,7 +2,7 @@ interface ProofTicketProps {
   title: string;
   subtitle: string;
   wallet: string;
-  nullifier?: string;
+  nullifier: string;
   date: string;
   status?: string;
 }
@@ -33,8 +33,8 @@ export const ProofTicket = ({ title, subtitle, wallet, nullifier, date, status }
           <div className="text-xs text-gray-600 uppercase tracking-wider mb-1">Wallet</div>
           <div className="text-sm font-medium mb-3">{wallet}</div>
           
-          <div className="text-xs text-gray-600 uppercase tracking-wider mb-1">Status</div>
-          <div className="text-sm font-medium mb-3">18+ CONFIRMED</div>
+          <div className="text-xs text-gray-600 uppercase tracking-wider mb-1">Nullifier</div>
+          <div className="text-sm font-medium mb-3">{nullifier}</div>
           
           <div className="text-xs text-gray-600 uppercase tracking-wider mb-1">
             {status ? 'Verified On' : 'Verified'}

@@ -4,7 +4,10 @@ import dotenv from "dotenv";
 import helmet from "helmet";
 import morgan from "morgan";
 import cors from "cors";
+
 import { UltraPlonkBackend } from "@aztec/bb.js";
+import { zkVerifySession, ZkVerifyEvents } from "zkverifyjs";
+
 dotenv.config();
 
 const app = express();
@@ -14,6 +17,24 @@ app.use(helmet());
 app.use(morgan("dev"));
 app.use(cors());
 app.use(express.json());
+
+
+
+// Load ZkVerify account
+let session;
+try {
+  const SEED = process.env.SEED;
+  session = await zkVerifySession.start().Volta().withAccount(SEED);
+  const accountInfo = await session.getAccountInfo();
+
+  console.log(`✅ zkVerify session initialized successfully:`);
+  console.log(`  Address: ${accountInfo[0].address}`);
+  console.log(`  Nonce: ${accountInfo[0].nonce}`);
+  console.log(`  Free Balance: ${accountInfo[0].freeBalance} ACME`);
+} catch (error) {
+  console.error("❌ Failed to initialize zkVerify session:", error);
+  process.exit(1);
+}
 
 // Rota POST
 app.post("/api/verify", async (req, res) => {

@@ -1,14 +1,14 @@
 {
   "name": "zk-backend",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Backend ZkProof18+",
   "main": "app.js",
   "type": "module",
   "scripts": {
     "r": "node src/server.js",
     "d": "NODE_ENV=development nodemon app.js",
-    "t": "node --experimental-vm-modules node_modules/.bin/jest --watch",
-    "tw": "node --experimental-vm-modules node_modules/.bin/jest --watchAll"
+    "t": "vitest",
+    "tw": "vitest --watch"
   },
   "dependencies": {
     "@aztec/bb.js": "0.72.1",
@@ -17,11 +17,12 @@
     "dotenv": "^16.4.1",
     "express": "^4.19.2",
     "helmet": "^7.0.0",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "zkverifyjs": "^0.12.1"
   },
   "devDependencies": {
-    "jest": "^30.0.5",
     "nodemon": "^3.0.3",
-    "supertest": "^7.1.4"
+    "supertest": "^7.1.4",
+    "vitest": "^3.2.4"
   }
 }

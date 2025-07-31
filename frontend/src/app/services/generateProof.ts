@@ -3,6 +3,8 @@ dotenv.config();
 
 export const generateProof = async (birthYear: number) => {
   const BACKEND = process.env.BACKEND || ""
+  console.log(">>>>>BACKEND")
+  console.info(BACKEND)
   try {
     const { UltraPlonkBackend } = await import("@aztec/bb.js");
     const { Noir } = await import("@noir-lang/noir_js");

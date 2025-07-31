@@ -1,7 +1,8 @@
 import dotenv from "dotenv";
-dotenv.config();
+
 
 export const generateProof = async (birthYear: number) => {
+  dotenv.config();
   const BACKEND = process.env.BACKEND || ""
   console.log(">>>>>BACKEND")
   console.info(BACKEND)

@@ -5,7 +5,8 @@ import { generateProof } from "./utils.proof.js";
 
 describe("ZK Proof API Tests", () => {
   // Set timeout to 3 minutes for all tests
-
+  // To run only this test, use:
+  // npx vitest -t "should successfully generate and verify proof for birth year 1997"
   it("should successfully generate and verify proof for birth year 1997", async () => {
     const birthYear = 1997;
 

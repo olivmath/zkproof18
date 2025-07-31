@@ -46,10 +46,26 @@ async function initializeZkVerify() {
 initializeZkVerify();
 
 // Hello World route
-app.get("/", (req, res) => {
-  res.json({ message: "Hello World!" });
+app.get("/hello", (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Hello World</title>
+      </head>
+      <body>
+        <h1>Hello World!</h1>
+      </body>
+    </html>
+  `);
 });
 
+// PreFlight request for /api/verify
+app.options("/api/verify", cors(), (req, res) => {
+  res.sendStatus(204);
+});
+
+// Verify proof route
 app.post("/api/verify", async (req, res) => {
   try {
     // ###############################################################

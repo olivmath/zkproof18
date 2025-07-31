@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 export const generateProof = async (birthYear: number) => {
   dotenv.config();
-  const BACKEND = process.env.BACKEND || ""
+  const BACKEND = process.env.BACKEND || "https://zk-backend-production.up.railway.app/api/verify";
   console.log(">>>>>BACKEND")
   console.info(BACKEND)
   try {

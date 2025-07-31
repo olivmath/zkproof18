@@ -45,46 +45,32 @@ export const GenerateProofForm = ({
     setProgress(0);
     setProgressText("Setting up session...");
     setError("");
-
-    let progressInterval: NodeJS.Timeout | null = null;
     
     try {
       const birthYear = birth.getFullYear();
 
-      const progressUpdates = [
-        { progress: 12, text: "Loading circuit..." },
-        { progress: 25, text: "Generating witness..." },
-        { progress: 37, text: "Generating cryptographic proof..." },
-        { progress: 50, text: "Generating verification key..." },
-        { progress: 62, text: "Verifying proof locally..." },
-        { progress: 75, text: "Submitting to blockchain..." },
-        { progress: 87, text: "Finalizing transaction..." },
-        { progress: 100, text: "Proof generated successfully!" },
-      ];
+      // Callback para atualizar progresso em tempo real
+      const handleProgress = (progress: number, text: string) => {
+        setProgress(progress);
+        setProgressText(text);
+      };
 
-      let currentStep = 0;
-      progressInterval = setInterval(() => {
-        if (currentStep < progressUpdates.length) {
-          const update = progressUpdates[currentStep];
-          setProgress(update.progress);
-          setProgressText(update.text);
-          currentStep++;
-        }
-      }, 1000);
-
-      const result = await generateProof(birthYear);
+      const result = await generateProof(birthYear, handleProgress);
 
       console.log("🔍 GenerateProof result:", result);
       console.log("🔍 result.txHash:", result.txHash);
       
-      if (progressInterval) clearInterval(progressInterval);
+      // Finalizar progresso
+      setProgress(95);
+      setProgressText("Processing response...");
       
-      setProgress(100);
-      setProgressText("Proof generated successfully!");
+      // Só avança quando tiver resposta do backend
+      setProgress(90);
+      setProgressText("Processing response...");
       
       // Usar dados reais do backend
       const proofData = {
-        txHash: result.txHash, // Do backend
+        txHash: result.txHash,
         verified: result.verified,
         message: result.message,
         verifiedDate: new Date().toISOString().split("T")[0],
@@ -104,12 +90,15 @@ export const GenerateProofForm = ({
         }
       }
 
+      // Só completa quando tudo estiver pronto
+      setProgress(100);
+      setProgressText("Proof generated successfully!");
+      
       setTimeout(() => {
         setIsGenerating(false);
         onProofGenerated(proofData);
-      }, 1000);
+      }, 500);
     } catch (error: any) {
-      if (progressInterval) clearInterval(progressInterval);
       setIsGenerating(false);
       setError(error.message || "An unexpected error occurred");
     }

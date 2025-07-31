@@ -1,17 +1,19 @@
 import dotenv from "dotenv";
 
 
-export const generateProof = async (birthYear: number) => {
+export const generateProof = async (birthYear: number, onProgress?: (progress: number, text: string) => void) => {
   dotenv.config();
   const BACKEND = process.env.BACKEND || "https://zk-backend-production.up.railway.app/api/verify";
-  // const BACKEND = "http://localhost:3001/api/verify";
   console.log(">>>>>BACKEND")
   console.info(BACKEND)
+  
   try {
+    onProgress?.(10, "Loading circuit...");
     const { UltraPlonkBackend } = await import("@aztec/bb.js");
     const { Noir } = await import("@noir-lang/noir_js");
     const res = await fetch("/circuit.json");
 
+    onProgress?.(25, "Initializing circuit...");
     const circuit = await res.json();
     const noir = new Noir(circuit);
     const backend = new UltraPlonkBackend(circuit.bytecode);
@@ -25,14 +27,17 @@ export const generateProof = async (birthYear: number) => {
       throw new Error(`Age must be between 18 and 100 years. Current age: ${age}`);
     }
 
+    onProgress?.(40, "Generating witness...");
     const { witness } = await noir.execute({
       birth_year: birthYear,
       current_year: currentYear,
     });
 
+    onProgress?.(60, "Generating proof...");
     const { proof, publicInputs } = await backend.generateProof(witness);
     const vk = await backend.getVerificationKey();
 
+    onProgress?.(80, "Submitting to blockchain...");
     try {      
       const response = await fetch(BACKEND, {
         method: "POST",

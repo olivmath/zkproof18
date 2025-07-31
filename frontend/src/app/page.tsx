@@ -5,25 +5,20 @@ import { TonConnectUIProvider } from "@tonconnect/ui-react";
 import { GameOfLife } from "./components/GameOfLife";
 import { Header } from "./components/Header";
 import { WalletStatus } from "./components/WalletStatus";
-import { ActionSelector } from "./components/ActionSelector";
+import { Button } from "./components/Button";
 import { GenerateProofForm } from "./components/GenerateProofForm";
-import { VerifyProofForm } from "./components/VerifyProofForm";
 import { SuccessSection } from "./components/SuccessSection";
-import { VerifySuccessSection } from "./components/VerifySuccessSection";
 import { LoginScreen } from "./components/LoginScreen";
 import { useState } from "react";
 
 
 function HomeContent() {
   const wallet = useTonWallet();
-  const [currentAction, setCurrentAction] = useState<'generate' | 'verify'>('generate');
-  const [currentView, setCurrentView] = useState<'main' | 'success' | 'verify-success'>('main');
+  const [currentView, setCurrentView] = useState<'main' | 'generate' | 'success'>('main');
   const [proofData, setProofData] = useState<any>(null);
-  const [verificationData, setVerificationData] = useState<any>(null);
 
-  const handleActionChange = (action: 'generate' | 'verify') => {
-    setCurrentAction(action);
-    setCurrentView('main');
+  const handleStartProofGeneration = () => {
+    setCurrentView('generate');
   };
 
   const handleProofGenerated = (data: any) => {
@@ -31,19 +26,9 @@ function HomeContent() {
     setCurrentView('success');
   };
 
-  const handleProofVerified = (data: any) => {
-    setVerificationData(data);
-    setCurrentView('verify-success');
-  };
-
   const handleNewProof = () => {
     setCurrentView('main');
     setProofData(null);
-  };
-
-  const handleVerifyAnother = () => {
-    setCurrentView('main');
-    setVerificationData(null);
   };
 
   return (
@@ -63,31 +48,24 @@ function HomeContent() {
             <WalletStatus />
             
             {currentView === 'main' && (
-              <>
-                <ActionSelector 
-                  currentAction={currentAction}
-                  onActionChange={handleActionChange}
-                />
-                
-                {currentAction === 'generate' ? (
-                  <GenerateProofForm onProofGenerated={handleProofGenerated} />
-                ) : (
-                  <VerifyProofForm onProofVerified={handleProofVerified} />
-                )}
-              </>
+              <div className="flex-1 flex items-center justify-center">
+                <Button 
+                  onClick={handleStartProofGeneration}
+                  className="text-lg py-8 text-center"
+                >
+                  GENERATE YOUR 18+ PROOF
+                </Button>
+              </div>
+            )}
+            
+            {currentView === 'generate' && (
+              <GenerateProofForm onProofGenerated={handleProofGenerated} />
             )}
             
             {currentView === 'success' && proofData && (
               <SuccessSection 
                 proofData={proofData}
                 onNewProof={handleNewProof}
-              />
-            )}
-            
-            {currentView === 'verify-success' && verificationData && (
-              <VerifySuccessSection 
-                verificationData={verificationData}
-                onVerifyAnother={handleVerifyAnother}
               />
             )}
           </div>

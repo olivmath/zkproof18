@@ -5,6 +5,11 @@ import helmet from "helmet";
 import morgan from "morgan";
 import cors from "cors";
 
+
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
 import { convertProof, convertVerificationKey } from "olivmath-ultraplonk-zk-verify";
 import { zkVerifySession, ZkVerifyEvents } from "zkverifyjs";
 import { UltraPlonkBackend } from "@aztec/bb.js";
@@ -12,6 +17,10 @@ import { UltraPlonkBackend } from "@aztec/bb.js";
 dotenv.config();
 
 const app = express();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 // Middlewares
 app.use(helmet());
@@ -58,15 +67,17 @@ app.post("/api/verify", async (req, res) => {
     
     // ###############################################################
     console.log("4. load circuit");
-    const circuitFile = await import("../public/circuit.json");
-    const circuit = circuitFile.default;
+    // const circuitFile = await import("../public/circuit.json", { assert: { type: "json" }});
+    // const circuit = circuitFile.default;
+    const circuitPath = path.join(__dirname, "../public/circuit.json");
+    const circuit = JSON.parse(fs.readFileSync(circuitPath, "utf-8"));
     const backend = new UltraPlonkBackend(circuit.bytecode);
     
     // ###############################################################
     console.log("5. verify proof");
     const result = await backend.verifyProof({
       proof: proofUint8Array,
-      publicInputs: publicInputs,
+      publicInputs: [publicInputs],
     });
     
     if (!result) {

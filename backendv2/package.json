@@ -1,12 +1,12 @@
 {
   "name": "zk-backend",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Backend ZkProof18+",
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "r": "node src/server.js",
-    "d": "NODE_ENV=development nodemon app.js",
+    "start": "node src/server.js",
+    "dev": "NODE_ENV=development nodemon src/server.js",
     "t": "vitest",
     "tw": "vitest --watch"
   },

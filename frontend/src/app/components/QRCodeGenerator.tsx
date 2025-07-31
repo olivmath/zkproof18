@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 
 interface QRCodeGeneratorProps {
   text: string;
@@ -11,13 +11,7 @@ interface QRCodeGeneratorProps {
 export const QRCodeGenerator = ({ text, size = 200, className = '' }: QRCodeGeneratorProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  useEffect(() => {
-    if (canvasRef.current && text) {
-      generateRealQRCode(canvasRef.current, text, size);
-    }
-  }, [text, size]);
-
-  const generateRealQRCode = async (canvas: HTMLCanvasElement, text: string, size: number) => {
+  const generateRealQRCode = useCallback(async (canvas: HTMLCanvasElement, text: string, size: number) => {
     try {
       // Try to load QR code library dynamically
       let QRCode: any;
@@ -51,8 +45,9 @@ export const QRCodeGenerator = ({ text, size = 200, className = '' }: QRCodeGene
     } catch (error) {
       console.error('Error generating QR code:', error);
       generateSimpleQR(canvas, text, size);
+
     }
-  };
+  }, []); // Adiciona as dependências do useCallback
 
   const loadQRCodeLibrary = (): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -193,4 +188,4 @@ export const QRCodeGenerator = ({ text, size = 200, className = '' }: QRCodeGene
       style={{ width: `${size}px`, height: `${size}px` }}
     />
   );
-}; 
+};

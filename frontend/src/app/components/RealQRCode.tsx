@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import Image from 'next/image';
 
 interface RealQRCodeProps {
   text: string;
@@ -13,13 +14,7 @@ export const RealQRCode = ({ text, size = 200, className = '' }: RealQRCodeProps
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
 
-  useEffect(() => {
-    if (text) {
-      generateQRCode();
-    }
-  }, [text, size]);
-
-  const generateQRCode = async () => {
+  const generateQRCode = useCallback(async () => {
     setIsLoading(true);
     setError('');
 
@@ -35,7 +30,11 @@ export const RealQRCode = ({ text, size = 200, className = '' }: RealQRCodeProps
       setError('Failed to generate QR code');
       setIsLoading(false);
     }
-  };
+  }, [text, size]);
+
+  useEffect(() => {
+    generateQRCode();
+  }, [generateQRCode]);
 
   if (isLoading) {
     return (
@@ -63,12 +62,12 @@ export const RealQRCode = ({ text, size = 200, className = '' }: RealQRCodeProps
   }
 
   return (
-    <img 
+    <Image
       src={qrImageUrl}
       alt="QR Code"
-      className={`max-w-full max-h-full border border-gray-200 ${className}`}
-      style={{ width: `${size}px`, height: `${size}px` }}
-      onError={() => setError('Failed to load QR code')}
+      width={size}
+      height={size}
+      className={className}
     />
   );
-}; 
+};

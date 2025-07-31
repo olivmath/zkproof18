@@ -28,10 +28,10 @@ export const VerifySuccessSection = ({ verificationData, onVerifyAnother }: Veri
     <Card>
       <ProofTicket
         title="PROOF VERIFIED"
-        subtitle="Valid Age Confirmation"
         wallet={walletAddress}
+        proofUrl={verificationData.proofUrl || '#'}
         date={verificationData.verifiedDate}
-        status={verificationData.status}
+        onNewProof={onVerifyAnother}
       />
       
       <Button onClick={onVerifyAnother}>
@@ -39,4 +39,4 @@ export const VerifySuccessSection = ({ verificationData, onVerifyAnother }: Veri
       </Button>
     </Card>
   );
-}; 
+};

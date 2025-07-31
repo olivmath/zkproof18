@@ -32,15 +32,7 @@ export const generateProof = async (birthYear: number) => {
     const { proof, publicInputs } = await backend.generateProof(witness);
     const vk = await backend.getVerificationKey();
 
-    try {
-      const result = await backend.verifyProof({ proof, publicInputs });
-
-      console.log("📤 Enviando prova para o backend...");
-      console.log("publicInputs:", publicInputs[0]);
-      console.log("publicInputs type:", typeof publicInputs[0]);
-      console.log("proof length:", proof.length);
-      console.log("vk length:", vk.length);
-      
+    try {      
       const response = await fetch(BACKEND, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

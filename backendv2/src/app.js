@@ -45,6 +45,10 @@ try {
   process.exit(1);
 }
 
+// Hello World route
+app.get("/", (req, res) => {
+  res.json({ message: "Hello World!" });
+});
 
 app.post("/api/verify", async (req, res) => {
   try {

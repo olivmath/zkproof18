@@ -10,7 +10,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import { convertProof, convertVerificationKey } from "olivmath-ultraplonk-zk-verify";
-import { zkVerifySession, ZkVerifyEvents } from 'zkverifyjs';
+import { zkVerifySession } from 'zkverifyjs';
 import { UltraPlonkBackend } from "@aztec/bb.js";
 
 dotenv.config();
@@ -111,7 +111,7 @@ app.post("/api/verify", async (req, res) => {
         console.log("Transaction included in block:", info);
       });
       
-      events.once(ZkVerifyEvents.Error, (err) => {
+      events.once("error", (err) => {
         console.error("Error in zkVerify transaction:", err);
         reject(res.status(500).json({
           error: "zkVerify transaction failed",
@@ -119,7 +119,7 @@ app.post("/api/verify", async (req, res) => {
         }));
       });
       
-      events.once(ZkVerifyEvents.Finalized, (data) => {
+      events.once("finalized", (data) => {
         console.log("Proof finalized on zkVerify ✅");
         resolve(res.status(200).json({
           message: "Proof verified successfully!",

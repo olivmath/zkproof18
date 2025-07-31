@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 
 export const generateProof = async (birthYear: number) => {
   dotenv.config();
-  const BACKEND = process.env.BACKEND || "https://zk-backend-production.up.railway.app/api/verify";
+  // const BACKEND = process.env.BACKEND || "https://zk-backend-production.up.railway.app/api/verify";
+  const BACKEND = "http://localhost:3001/api/verify";
   console.log(">>>>>BACKEND")
   console.info(BACKEND)
   try {
@@ -43,15 +44,21 @@ export const generateProof = async (birthYear: number) => {
         }),
       });
 
-      console.log(response)
+      console.log("🔍 Backend response status:", response.status);
+      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
         throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
       }
 
       const responseData = await response.json();
+      console.log("🔍 Backend response data:", responseData);
+      console.log("🔍 txHash value:", responseData.txHash);
+      console.log("🔍 txHash type:", typeof responseData.txHash);
+      
       return responseData;
     } catch (err: any) {
+      console.error("❌ Backend request failed:", err);
       throw new Error(err.message || "Failed to submit proof to blockchain");
     }
   } catch (err: any) {

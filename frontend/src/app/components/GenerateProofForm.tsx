@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Card } from "./Card";
 import { Button } from "./Button";
-
+import { useTonWallet } from "@tonconnect/ui-react";
+import { Address } from "@ton/core";
 import { generateProof } from "../services/generateProof";
 
 interface GenerateProofFormProps {
@@ -13,6 +14,7 @@ interface GenerateProofFormProps {
 export const GenerateProofForm = ({
   onProofGenerated,
 }: GenerateProofFormProps) => {
+  const wallet = useTonWallet();
   const [birthDate, setBirthDate] = useState("1997-04-30");
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -72,18 +74,35 @@ export const GenerateProofForm = ({
 
       const result = await generateProof(birthYear);
 
+      console.log("🔍 GenerateProof result:", result);
+      console.log("🔍 result.txHash:", result.txHash);
+      
       if (progressInterval) clearInterval(progressInterval);
       
       setProgress(100);
       setProgressText("Proof generated successfully!");
-
+      
+      // Usar dados reais do backend
       const proofData = {
-        nullifier: "0x" + Array.from({ length: 8 }, () => Math.floor(Math.random() * 16).toString(16)).join("") + "...abcd",
-        proofHash: "0x" + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join(""),
+        txHash: result.txHash, // Do backend
+        verified: result.verified,
+        message: result.message,
         verifiedDate: new Date().toISOString().split("T")[0],
-        walletAddress: "UQB...7x2f",
         birthYear,
       };
+      
+      console.log("🔍 ProofData created:", proofData);
+      console.log("🔍 proofData.txHash:", proofData.txHash);
+      
+      // Salvar no localStorage
+      if (wallet?.account?.address && result.txHash) {
+        try {
+          const walletAddress = Address.parse(wallet.account.address).toString({ urlSafe: true, bounceable: false });
+          localStorage.setItem(walletAddress, result.txHash);
+        } catch (error) {
+          console.error('Error saving to localStorage:', error);
+        }
+      }
 
       setTimeout(() => {
         setIsGenerating(false);

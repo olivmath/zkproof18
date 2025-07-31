@@ -142,7 +142,7 @@ app.post("/api/verify", async (req, res) => {
         resolve(res.status(200).json({
           message: "Proof verified successfully!",
           verified: true,
-          txhash: data.txhash,
+          txHash: data.txHash,
         }));
       });
     });

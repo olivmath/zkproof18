@@ -9,13 +9,31 @@ import { Button } from "./components/Button";
 import { GenerateProofForm } from "./components/GenerateProofForm";
 import { SuccessSection } from "./components/SuccessSection";
 import { LoginScreen } from "./components/LoginScreen";
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
+import { Address } from "@ton/core";
 
 function HomeContent() {
   const wallet = useTonWallet();
   const [currentView, setCurrentView] = useState<'main' | 'generate' | 'success'>('main');
   const [proofData, setProofData] = useState<any>(null);
+
+  // Verificar localStorage quando wallet conectar
+  useEffect(() => {
+    if (wallet?.account?.address) {
+      try {
+        const walletAddress = Address.parse(wallet.account.address).toString({ urlSafe: true, bounceable: false });
+        const savedTxHash = localStorage.getItem(walletAddress);
+        
+        if (savedTxHash) {
+          // Se tem txHash salvo, mostrar QR code
+          setProofData({ txHash: savedTxHash });
+          setCurrentView('success');
+        }
+      } catch (error) {
+        console.error('Error checking localStorage:', error);
+      }
+    }
+  }, [wallet]);
 
   const handleStartProofGeneration = () => {
     setCurrentView('generate');
@@ -27,6 +45,15 @@ function HomeContent() {
   };
 
   const handleNewProof = () => {
+    // Limpar localStorage ao gerar nova prova
+    if (wallet?.account?.address) {
+      try {
+        const walletAddress = Address.parse(wallet.account.address).toString({ urlSafe: true, bounceable: false });
+        localStorage.removeItem(walletAddress);
+      } catch (error) {
+        console.error('Error clearing localStorage:', error);
+      }
+    }
     setCurrentView('main');
     setProofData(null);
   };
@@ -48,17 +75,6 @@ function HomeContent() {
             <WalletStatus />
             
             {currentView === 'main' && (
-              <div className="flex-1 flex items-center justify-center">
-                <Button 
-                  onClick={handleStartProofGeneration}
-                  className="text-lg py-8 text-center"
-                >
-                  GENERATE YOUR 18+ PROOF
-                </Button>
-              </div>
-            )}
-            
-            {currentView === 'generate' && (
               <GenerateProofForm onProofGenerated={handleProofGenerated} />
             )}
             

@@ -11,14 +11,13 @@ export const QRCodeSection = ({ proofUrl }: QRCodeSectionProps) => {
                      <OfflineQRCode
                text={proofUrl}
                size={200}
-               className="border border-gray-200"
+               className="border border-gray-200 bg-blue-500"
              />
       </div>
-      <div className="text-xs text-gray-500 break-all mb-5">
-        {proofUrl}
-      </div>
-      <div className="text-xs text-gray-400">
-        Scan to view proof
+      <div className="text-xs">
+        <a href={proofUrl} className="text-blue-500 hover:text-blue-700">
+          Scan to view proof
+        </a>
       </div>
     </div>
   );

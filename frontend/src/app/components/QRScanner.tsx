@@ -126,7 +126,7 @@ export const QRScanner = ({ onQRCodeDetected, onError, className = '' }: QRScann
   const validateProofQRCode = (data: string): boolean => {
     try {
       // Check if it's a valid proof URL (like the one you provided)
-      if (data.startsWith('https://zkverify.io/proof/')) {
+      if (data.startsWith('https://zkverify-testnet.subscan.io/extrinsic/')) {
         const proofHash = data.split('/').pop();
         // Validate proof hash format (should be a hex string starting with 0x)
         if (proofHash && /^0x[0-9a-fA-F]+$/.test(proofHash)) {

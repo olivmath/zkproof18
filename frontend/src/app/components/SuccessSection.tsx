@@ -32,7 +32,14 @@ export const SuccessSection = ({
   const walletAddress = wallet
     ? formatTonAddress(wallet.account.address)
     : "UQB...7x2f";
-  const proofUrl = `https://zkverify.io/proof/${proofData.proofHash}`;
+  
+  // Usar txHash real em vez de proofHash mockado
+  const proofUrl = proofData.txHash 
+    ? `https://zkverify-testnet.subscan.io/extrinsic/${proofData.txHash}`
+    : `https://zkverify-testnet.subscan.io/extrinsic/no-hash-available`;
+  
+  console.log("🔍 SuccessSection proofData:", proofData);
+  console.log("🔍 Final proofUrl:", proofUrl);
 
   return (
     <Card>

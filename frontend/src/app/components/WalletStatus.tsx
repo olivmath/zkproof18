@@ -4,7 +4,6 @@ import { Address } from '@ton/core';
 
 // Função para converter endereço TON para formato user-friendly
 const formatTonAddress = (address: string) => {
-  console.log('Raw address:', address);
   
   try {
     // Usa a biblioteca @ton/core para converter o endereço

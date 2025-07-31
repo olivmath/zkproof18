@@ -1,5 +1,8 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 export const generateProof = async (birthYear: number) => {
-  const BACKEND = "http://localhost:3001";
+  const BACKEND = process.env.BACKEND || "https://zk-backend-production.up.railway.app";
   try {
     const { UltraPlonkBackend } = await import("@aztec/bb.js");
     const { Noir } = await import("@noir-lang/noir_js");

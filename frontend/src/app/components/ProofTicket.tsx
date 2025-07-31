@@ -190,7 +190,7 @@ export const ProofTicket = ({ title, wallet, proofUrl, date, onNewProof }: Proof
       </div>
       
       {/* Wallet Info */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 gap-4 mb-6">
         <div className="bg-gray-800/20 border border-gray-700 rounded-lg p-4">
           <div className="text-xs text-gray-200 uppercase tracking-wider font-bold mb-1">
             Wallet Address

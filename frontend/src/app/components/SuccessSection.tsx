@@ -1,10 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { Card } from "./Card";
-import { Button } from "./Button";
 import { ProofTicket } from "./ProofTicket";
-import { QRCodeSection } from "./QRCodeSection";
 import { useTonWallet } from "@tonconnect/ui-react";
 import { Address } from "@ton/core";
 
@@ -37,20 +33,16 @@ export const SuccessSection = ({
   const proofUrl = proofData.txHash 
     ? `https://zkverify-testnet.subscan.io/extrinsic/${proofData.txHash}`
     : `https://zkverify-testnet.subscan.io/extrinsic/no-hash-available`;
-  
-  console.log("🔍 SuccessSection proofData:", proofData);
-  console.log("🔍 Final proofUrl:", proofUrl);
 
   return (
-    <Card>
+    <div className="flex justify-center">
       <ProofTicket
         title="AGE VERIFIED"
-        subtitle="Zero Knowledge Proof"
         wallet={walletAddress}
-        date={proofData.verifiedDate}
+        proofUrl={proofUrl}
+        date={proofData.verifiedDate || new Date().toLocaleDateString()}
+        onNewProof={onNewProof}
       />
-      <QRCodeSection proofUrl={proofUrl} />
-      <Button onClick={onNewProof}>GENERATE ANOTHER PROOF</Button>
-    </Card>
+    </div>
   );
 };

@@ -43,6 +43,7 @@ export const generateProof = async (birthYear: number) => {
         }),
       });
 
+      console.log(response)
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
         throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);

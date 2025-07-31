@@ -1,21 +1,22 @@
 "use client";
 
-import { useState } from 'react';
-import { Card } from './Card';
-import { Button } from './Button';
-import { ProofTicket } from './ProofTicket';
-import { QRCodeSection } from './QRCodeSection';
-import { useTonWallet } from '@tonconnect/ui-react';
-import { Address } from '@ton/core';
+import { useState } from "react";
+import { Card } from "./Card";
+import { Button } from "./Button";
+import { ProofTicket } from "./ProofTicket";
+import { QRCodeSection } from "./QRCodeSection";
+import { useTonWallet } from "@tonconnect/ui-react";
+import { Address } from "@ton/core";
 
 interface SuccessSectionProps {
   proofData: any;
   onNewProof: () => void;
 }
 
-export const SuccessSection = ({ proofData, onNewProof }: SuccessSectionProps) => {
-  const [isAddedToWallet, setIsAddedToWallet] = useState(false);
-
+export const SuccessSection = ({
+  proofData,
+  onNewProof,
+}: SuccessSectionProps) => {
   const wallet = useTonWallet();
 
   // Função para converter endereço TON para formato user-friendly
@@ -28,28 +29,10 @@ export const SuccessSection = ({ proofData, onNewProof }: SuccessSectionProps) =
     }
   };
 
-  const walletAddress = wallet ? formatTonAddress(wallet.account.address) : 'UQB...7x2f';
-        const proofUrl = `https://zkverify.io/proof/${proofData.proofHash}`;
-
-  const handleAddToWallet = () => {
-    // Detect if device supports wallet features
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isAndroid = /Android/.test(navigator.userAgent);
-    
-    if (isIOS) {
-      // Apple Wallet integration would go here
-      alert('Pass would be added to Apple Wallet in production. You would need Apple Developer certificates and a backend to sign the pass.');
-    } else if (isAndroid) {
-      // Google Wallet integration would go here
-      alert('Pass would be added to Google Wallet in production. You would need Google service account credentials and JWT signing.');
-    } else {
-      alert('Wallet integration not supported on this device');
-    }
-    
-    setIsAddedToWallet(true);
-  };
-
-
+  const walletAddress = wallet
+    ? formatTonAddress(wallet.account.address)
+    : "UQB...7x2f";
+  const proofUrl = `https://zkverify.io/proof/${proofData.proofHash}`;
 
   return (
     <Card>
@@ -59,23 +42,8 @@ export const SuccessSection = ({ proofData, onNewProof }: SuccessSectionProps) =
         wallet={walletAddress}
         date={proofData.verifiedDate}
       />
-      
-                   <QRCodeSection proofUrl={proofUrl} />
-      
-      <Button 
-        variant="secondary" 
-        onClick={handleAddToWallet}
-        disabled={isAddedToWallet}
-        className="mb-3"
-      >
-        {isAddedToWallet ? 'ADDED TO WALLET ✓' : 'ADD TO WALLET'}
-      </Button>
-      
-
-      
-      <Button onClick={onNewProof}>
-        GENERATE ANOTHER PROOF
-      </Button>
+      <QRCodeSection proofUrl={proofUrl} />
+      <Button onClick={onNewProof}>GENERATE ANOTHER PROOF</Button>
     </Card>
   );
-}; 
+};

@@ -1,9 +1,8 @@
 {
   "name": "zk-backend",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Backend ZkProof18+",
   "main": "app.js",
-  "type": "module",
   "scripts": {
     "start": "node src/server.js",
     "dev": "NODE_ENV=development nodemon src/server.js",

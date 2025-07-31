@@ -1,24 +1,20 @@
 // app.js
-import express from "express";
-import dotenv from "dotenv";
-import helmet from "helmet";
-import morgan from "morgan";
-import cors from "cors";
+const express = require("express");
+const dotenv = require("dotenv");
+const helmet = require("helmet");
+const morgan = require("morgan");
+const cors = require("cors");
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+const fs = require("fs");
+const path = require("path");
 
-import { convertProof, convertVerificationKey } from "olivmath-ultraplonk-zk-verify";
-import { zkVerifySession } from 'zkverifyjs';
-import { UltraPlonkBackend } from "@aztec/bb.js";
+const { convertProof, convertVerificationKey } = require("olivmath-ultraplonk-zk-verify");
+const { zkVerifySession } = require('zkverifyjs');
+const { UltraPlonkBackend } = require("@aztec/bb.js");
 
 dotenv.config();
 
 const app = express();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Middlewares
 app.use(helmet());
@@ -29,19 +25,25 @@ app.use(express.json());
 // Load ZkVerify account
 let session;
 let accountInfo;
-try {
-  const SEED = process.env.SEED;
-  session = await zkVerifySession.start().Volta().withAccount(SEED);
-  accountInfo = await session.getAccountInfo();
 
-  console.log(`✅ zkVerify session initialized successfully:`);
-  console.log(`  Address: ${accountInfo[0].address}`);
-  console.log(`  Nonce: ${accountInfo[0].nonce}`);
-  console.log(`  Free Balance: ${accountInfo[0].freeBalance} ACME`);
-} catch (error) {
-  console.error("❌ Failed to initialize zkVerify session:", error);
-  process.exit(1);
+async function initializeZkVerify() {
+  try {
+    const SEED = process.env.SEED;
+    session = await zkVerifySession.start().Volta().withAccount(SEED);
+    accountInfo = await session.getAccountInfo();
+
+    console.log(`✅ zkVerify session initialized successfully:`);
+    console.log(`  Address: ${accountInfo[0].address}`);
+    console.log(`  Nonce: ${accountInfo[0].nonce}`);
+    console.log(`  Free Balance: ${accountInfo[0].freeBalance} ACME`);
+  } catch (error) {
+    console.error("❌ Failed to initialize zkVerify session:", error);
+    process.exit(1);
+  }
 }
+
+// Initialize zkVerify session
+initializeZkVerify();
 
 // Hello World route
 app.get("/", (req, res) => {
@@ -120,7 +122,7 @@ app.post("/api/verify", async (req, res) => {
       });
       
       events.once("finalized", (data) => {
-        console.log("Proof finalized on zkVerify ✅");
+        console.log("9. proof finalized on zkVerify");
         resolve(res.status(200).json({
           message: "Proof verified successfully!",
           verified: true,
@@ -149,4 +151,4 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Internal server error" });
 });
 
-export default app;
+module.exports = app;

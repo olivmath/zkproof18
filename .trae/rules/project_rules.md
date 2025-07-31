@@ -6,3 +6,4 @@
 3. Always think about: "how to make more simple and understandable code"
 4. Never rewrite the entire code file!
 5. Only respond with one-off changes
+

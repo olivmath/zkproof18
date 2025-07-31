@@ -5,13 +5,12 @@ import helmet from "helmet";
 import morgan from "morgan";
 import cors from "cors";
 
-
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
 import { convertProof, convertVerificationKey } from "olivmath-ultraplonk-zk-verify";
-import { zkVerifySession, ZkVerifyEvents } from "zkverifyjs";
+import { zkVerifySession, ZkVerifyEvents } from 'zkverifyjs';
 import { UltraPlonkBackend } from "@aztec/bb.js";
 
 dotenv.config();
@@ -20,7 +19,6 @@ const app = express();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 
 // Middlewares
 app.use(helmet());
@@ -71,8 +69,6 @@ app.post("/api/verify", async (req, res) => {
     
     // ###############################################################
     console.log("4. load circuit");
-    // const circuitFile = await import("../public/circuit.json", { assert: { type: "json" }});
-    // const circuit = circuitFile.default;
     const circuitPath = path.join(__dirname, "../public/circuit.json");
     const circuit = JSON.parse(fs.readFileSync(circuitPath, "utf-8"));
     const backend = new UltraPlonkBackend(circuit.bytecode);
@@ -141,12 +137,13 @@ app.post("/api/verify", async (req, res) => {
     });
   }
 });
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-// Error handler
+// Error handler 
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Internal server error" });

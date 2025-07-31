@@ -94,11 +94,6 @@ function HomeContent() {
         )}
       </div>
       
-      {wallet && (
-        <div className="fixed right-6 bottom-6 z-20">
-          <TonConnectButton />
-        </div>
-      )}
     </div>
   );
 }

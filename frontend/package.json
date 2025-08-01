@@ -20,7 +20,9 @@
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "sonner": "^2.0.3"
+    "sonner": "^2.0.3",
+    "@types/jsbarcode": "^3.11.4",
+    "jsbarcode": "^3.12.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

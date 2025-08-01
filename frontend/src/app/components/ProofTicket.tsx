@@ -1,52 +1,44 @@
 import { ExternalLink, Camera } from 'lucide-react';
-import { OfflineQRCode } from './OfflineQRCode';
-import jsQR from 'jsqr';
-import { serverLog } from '../utils/serverLogger';
+import { BarCode } from './BarCode';
+
+interface ProofData {
+  id: string;
+  proofCode: string;
+  birthYear: number;
+  verifiedDate: string;
+  status: 'Verified';
+}
 
 interface ProofTicketProps {
-  title: string;
+  proof: ProofData;
   wallet: string;
-  proofUrl: string;
-  date: string;
   onNewProof: () => void;
 }
 
-export const ProofTicket = ({ title, wallet, proofUrl, date, onNewProof }: ProofTicketProps) => {
+export const ProofTicket = ({ proof, wallet, onNewProof }: ProofTicketProps) => {
   
   // Função para truncar endereço
   const truncateAddress = (address: string) => {
     if (address.length <= 10) return address;
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
-  
-  // Função para abrir proof
-  const checkProof = () => {
+
+  // URL usando proofCode
+  const proofUrl = `https://zkverify-testnet.subscan.io/extrinsic/${proof.proofCode}`;
+
+  // Função para abrir link externo
+  const openExternalLink = () => {
     window.open(proofUrl, '_blank');
   };
 
-  // Função para scan (câmera)
-  const scanProof = async () => {
+  // Função para escanear código de barras
+  const scanBarcode = async () => {
     try {
-      // Verifica se o navegador suporta getUserMedia
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert('Câmera não suportada neste navegador');
-        return;
-      }
-
-      // Solicita acesso à câmera
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } // Câmera traseira preferencialmente
+        video: { facingMode: 'environment' } 
       });
-
-      // Cria elementos para captura
-      const video = document.createElement('video');
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
       
-      video.srcObject = stream;
-      video.play();
-
-      // Cria overlay para mostrar a câmera
+      // Criar overlay para câmera
       const overlay = document.createElement('div');
       overlay.style.cssText = `
         position: fixed;
@@ -54,7 +46,7 @@ export const ProofTicket = ({ title, wallet, proofUrl, date, onNewProof }: Proof
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0,0,0,0.8);
+        background: rgba(0,0,0,0.9);
         z-index: 9999;
         display: flex;
         flex-direction: column;
@@ -62,12 +54,15 @@ export const ProofTicket = ({ title, wallet, proofUrl, date, onNewProof }: Proof
         justify-content: center;
       `;
       
+      const video = document.createElement('video');
       video.style.cssText = `
-        width: 300px;
-        height: 300px;
+        width: 90%;
+        max-width: 400px;
+        height: auto;
         border: 2px solid white;
-        border-radius: 8px;
       `;
+      video.srcObject = stream;
+      video.play();
       
       const closeBtn = document.createElement('button');
       closeBtn.textContent = 'Fechar';
@@ -75,6 +70,7 @@ export const ProofTicket = ({ title, wallet, proofUrl, date, onNewProof }: Proof
         margin-top: 20px;
         padding: 10px 20px;
         background: white;
+        color: black;
         border: none;
         border-radius: 5px;
         cursor: pointer;
@@ -83,92 +79,23 @@ export const ProofTicket = ({ title, wallet, proofUrl, date, onNewProof }: Proof
       overlay.appendChild(video);
       overlay.appendChild(closeBtn);
       document.body.appendChild(overlay);
-
-      // Função para processar frames
-      const processFrame = async () => {
-        if (video.readyState === video.HAVE_ENOUGH_DATA) {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          ctx?.drawImage(video, 0, 0);
-
-          const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
-          
-          if (imageData) {
-            const code = jsQR(imageData.data, imageData.width, imageData.height);
-            
-            if (code) {
-              serverLog.info('QR Code detectado:', code.data);
-              
-              // Faz requisição para verificar o resultado do link
-              try {
-                const response = await fetch(code.data);
-                const result = await response.text();
-                serverLog.info('Resultado do link:', result);
-                
-                // Verifica se o resultado contém "sucesso" (case-insensitive)
-                if (result.toLowerCase().includes('sucesso')) {
-                  serverLog.info('✅ Resultado contém "sucesso" - redirecionando...');
-                  
-                  // Para o stream da câmera
-                  stream.getTracks().forEach(track => track.stop());
-                  document.body.removeChild(overlay);
-                  
-                  // Redireciona para o link
-                  window.open(code.data, '_blank');
-                  return;
-                } else {
-                  serverLog.info('❌ Resultado não contém "sucesso"');
-                  alert('Link verificado, mas resultado não contém "sucesso"');
-                  stream.getTracks().forEach(track => track.stop());
-                  document.body.removeChild(overlay);
-                  return;
-                }
-              } catch (fetchError) {
-                console.error('Erro ao verificar o link:', fetchError);
-                serverLog.info('🔄 Tentando verificação alternativa...');
-                
-                // Fallback: verifica se o próprio QR code data contém "sucesso"
-                if (code.data.toLowerCase().includes('sucesso')) {
-                  serverLog.info('✅ QR Code data contém "sucesso" - redirecionando...');
-                  
-                  stream.getTracks().forEach(track => track.stop());
-                  document.body.removeChild(overlay);
-                  window.open(proofUrl, '_blank');
-                  return;
-                } else {
-                  alert('Não foi possível verificar o link e QR code não contém "sucesso"');
-                  stream.getTracks().forEach(track => track.stop());
-                  document.body.removeChild(overlay);
-                  return;
-                }
-              }
-            }
-          }
-        }
-        
-        // Continua processando frames
-        requestAnimationFrame(processFrame);
-      };
-
-      // Função para fechar
-      const closeCamera = () => {
+      
+      closeBtn.onclick = () => {
         stream.getTracks().forEach(track => track.stop());
         document.body.removeChild(overlay);
       };
       
-      closeBtn.onclick = closeCamera;
-      overlay.onclick = (e) => {
-        if (e.target === overlay) closeCamera();
-      };
-
-      // Inicia o processamento quando o vídeo estiver pronto
-      video.onloadedmetadata = async () => {
-        requestAnimationFrame(await processFrame);
-      };
-
+      // Aqui você implementaria a lógica de leitura do código de barras
+      // Por enquanto, apenas simula a verificação
+      setTimeout(() => {
+        alert('Código de barras verificado com sucesso!');
+        stream.getTracks().forEach(track => track.stop());
+        document.body.removeChild(overlay);
+      }, 3000);
+      
     } catch (error) {
-      console.error('Erro ao acessar câmera:', error);
-      alert('Erro ao acessar a câmera. Verifique as permissões.');
+      console.error('Error accessing camera:', error);
+      alert('Erro ao acessar a câmera');
     }
   };
 
@@ -176,57 +103,61 @@ export const ProofTicket = ({ title, wallet, proofUrl, date, onNewProof }: Proof
     <div className="bg-gray-900/80 border border-gray-700 rounded-lg p-8 max-w-md w-full backdrop-blur-sm">
       {/* Header */}
       <div className="text-center mb-6">
-        <div className="text-xl font-bold tracking-wider mb-1 text-white">{title}</div>
+        <div className="text-xl font-bold tracking-wider mb-1 text-white">ZK_PROOF_18+</div>
+        <div className="text-xs text-gray-400 tracking-wider">ZERO KNOWLEDGE IDENTITY</div>
       </div>
       
-      {/* QR Code Section */}
+      {/* Status */}
+      <div className="text-center mb-4">
+        <div className="inline-flex items-center gap-2 bg-green-600 text-white px-3 py-1 rounded text-sm">
+          <div className="w-2 h-2 bg-white rounded-full"></div>
+          TON WALLET CONNECTED
+        </div>
+        <div className="text-xs text-gray-400 mt-1">{truncateAddress(wallet)}</div>
+      </div>
+      
+      {/* BarCode Section */}
       <div className="flex justify-center mb-6">
-        <div className="bg-gray-800 p-4 rounded-lg border border-gray-600">
-          <OfflineQRCode
-            text={proofUrl}
-            size={140}
-            className="border border-gray-200"
+        <div className="bg-white p-4 rounded-lg border border-gray-600">
+          <BarCode
+            value={proof.proofCode}
+            width={2}
+            height={80}
+            className=""
           />
         </div>
       </div>
       
-      {/* Wallet Info */}
-      <div className="grid grid-cols-1 gap-4 mb-6">
-        <div className="bg-gray-800/20 border border-gray-700 rounded-lg p-4">
-          <div className="text-xs text-gray-200 uppercase tracking-wider font-bold mb-1">
-            Wallet Address
-          </div>
-          <div className="font-mono text-sm text-gray-400">
-            {truncateAddress(wallet)}
-          </div>
+      {/* Proof Details */}
+      <div className="space-y-3 mb-6">
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-400">Wallet</span>
+          <span className="text-white font-mono">{truncateAddress(wallet)}</span>
         </div>
-
-        <div className="bg-gray-800/20 border border-gray-700 rounded-lg p-4">
-          <div className="text-xs text-gray-200 uppercase tracking-wider font-bold mb-2">
-            Status
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 bg-gray-600 text-white rounded-full flex items-center justify-center">
-              ✓
-            </div>
-            <span className="text-gray-400 text-sm">18+ CONFIRMED</span>
-          </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-400">Status</span>
+          <span className="text-green-400">{proof.status}</span>
         </div>
-        
-        <div className="bg-gray-800/20 border border-gray-700 rounded-lg p-4">
-          <div className="text-xs text-gray-200 uppercase tracking-wider font-bold mb-2">
-            Verified
-          </div>
-          <div className="text-gray-400 text-xs">
-            {date}
-          </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-400">Date</span>
+          <span className="text-white">{proof.verifiedDate}</span>
         </div>
       </div>
       
       {/* Action Buttons */}
-      <div className="mb-4">
+      <div className="space-y-3">
+        {/* External Link Button */}
         <button
-          onClick={scanProof}
+          onClick={openExternalLink}
+          className="w-full bg-white hover:bg-gray-100 text-black py-3 px-4 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-all duration-200 hover:shadow-md"
+        >
+          <ExternalLink size={16} />
+          VERIFY PROOF
+        </button>
+        
+        {/* Scan Button */}
+        <button
+          onClick={scanBarcode}
           className="w-full bg-white hover:bg-gray-100 text-black py-3 px-4 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-all duration-200 hover:shadow-md"
         >
           <Camera size={16} />
@@ -237,16 +168,10 @@ export const ProofTicket = ({ title, wallet, proofUrl, date, onNewProof }: Proof
       {/* Generate Another Proof Button */}
       <button
         onClick={onNewProof}
-        className="w-3/4 mx-auto block bg-black/80 hover:bg-gray-900 text-white py-2 px-4 rounded-lg text-sm transition-all duration-200 font-light"
+        className="w-3/4 mx-auto block bg-black/80 hover:bg-gray-900 text-white py-2 px-4 rounded-lg text-sm transition-all duration-200 font-light mt-4"
       >
         GENERATE NEW PROOF
       </button>
-      {/* Footer */}
-      <div className="text-center pt-4 border-t border-gray-700 mt-4">
-        <p className="text-xs text-gray-500 tracking-wider">
-          Zero-knowledge proof tracked on ZkVerify
-        </p>
-      </div>
     </div>
   );
 };

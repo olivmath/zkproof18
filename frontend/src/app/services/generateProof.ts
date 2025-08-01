@@ -39,7 +39,9 @@ export const generateProof = async (birthYear: number, onProgress?: (progress: n
     try {      
       const response = await fetch(BACKEND, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           publicInputs: publicInputs[0],
           proof: Array.from(proof),
@@ -49,11 +51,18 @@ export const generateProof = async (birthYear: number, onProgress?: (progress: n
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
-
-      const responseData = await response.json();      
-      return responseData;
+      
+      const result = await response.json();
+      serverLog.info("✅ Backend response received", result);
+      
+      // Retornar proofCode em vez de txHash
+      return {
+        proofCode: result.proofCode || result.txHash, // fallback para compatibilidade
+        verified: result.verified,
+        message: result.message
+      };
     } catch (err: any) {
       serverLog.error("❌ Backend request failed", err);
       throw new Error(err.message || "Failed to submit proof to blockchain");

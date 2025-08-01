@@ -75,13 +75,9 @@ export const GenerateProofForm = ({
       setProgress(95);
       setProgressText("Processing response...");
 
-      // Só avança quando tiver resposta do backend
-      setProgress(90);
-      setProgressText("Processing response...");
-
-      // Usar dados reais do backend
+      // Usar dados reais do backend com proofCode
       const proofData = {
-        txHash: result.txHash,
+        proofCode: result.proofCode,
         verified: result.verified,
         message: result.message,
         verifiedDate: new Date().toISOString().split("T")[0],
@@ -89,13 +85,13 @@ export const GenerateProofForm = ({
       };
 
       // Salvar no localStorage
-      if (wallet?.account?.address && result.txHash) {
+      if (wallet?.account?.address && result.proofCode) {
         try {
           const walletAddress = Address.parse(wallet.account.address).toString({
             urlSafe: true,
             bounceable: false,
           });
-          localStorage.setItem(walletAddress, result.txHash);
+          localStorage.setItem(walletAddress, result.proofCode);
         } catch (error) {
           console.error("Error saving to localStorage:", error);
         }

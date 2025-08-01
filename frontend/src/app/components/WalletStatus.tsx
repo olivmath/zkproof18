@@ -43,9 +43,9 @@ export const WalletStatus = () => {
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <Button
+        <button
           onClick={handleDisconnect}
-          className="bg-gray-600 hover:bg-gray-700 text-black flex items-center gap-2 px-3 py-2 rounded"
+          className="bg-red-500 hover:bg-red-800 text-white flex items-center gap-2 px-3 py-2 rounded transition-colors duration-200"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -57,12 +57,13 @@ export const WalletStatus = () => {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
+            className="text-white"
           >
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
             <polyline points="16 17 21 12 16 7" />
             <line x1="21" y1="12" x2="9" y2="12" />
           </svg>
-        </Button>
+        </button>
       </div>
     </div>
   );

@@ -200,12 +200,14 @@ export const GenerateProofForm = ({
         </div>
       )}
       {isGenerating && (
-        <Button
-          onClick={handleCancelGeneration}
-          className="mt-3 bg-red-600 hover:bg-red-700 text-sm py-1 px-4 w-auto"
-        >
-          CANCEL
-        </Button>
+        <div className="flex justify-center">
+          <button
+            onClick={handleCancelGeneration}
+            className="mt-3 w-[95%] bg-red-500 hover:bg-red-600 text-white text-sm py-1.5 rounded transition-colors duration-200 font-mono uppercase tracking-wider"
+          >
+            CANCEL
+          </button>
+        </div>
       )}
 
       {error && (

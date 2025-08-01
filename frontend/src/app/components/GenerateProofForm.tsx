@@ -6,6 +6,7 @@ import { Button } from "./Button";
 import { useTonWallet } from "@tonconnect/ui-react";
 import { Address } from "@ton/core";
 import { generateProof } from "../services/generateProof";
+import { serverLog } from "../utils/serverLogger";
 
 interface GenerateProofFormProps {
   onProofGenerated: (proofData: any) => void;
@@ -70,9 +71,6 @@ export const GenerateProofForm = ({
       };
       const result = await generateProof(birthYear, handleProgress);
 
-      console.log("🔍 GenerateProof result:", result);
-      console.log("🔍 result.txHash:", result.txHash);
-
       // Finalizar progresso
       setProgress(95);
       setProgressText("Processing response...");
@@ -89,9 +87,6 @@ export const GenerateProofForm = ({
         verifiedDate: new Date().toISOString().split("T")[0],
         birthYear,
       };
-
-      console.log("🔍 ProofData created:", proofData);
-      console.log("🔍 proofData.txHash:", proofData.txHash);
 
       // Salvar no localStorage
       if (wallet?.account?.address && result.txHash) {

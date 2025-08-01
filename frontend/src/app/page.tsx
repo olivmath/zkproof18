@@ -10,6 +10,7 @@ import { SuccessSection } from "./components/SuccessSection";
 import { LoginScreen } from "./components/LoginScreen";
 import { useState, useEffect } from "react";
 import { Address } from "@ton/core";
+import { setWalletAddress, serverLog } from "./utils/serverLogger";
 
 function HomeContent() {
   const wallet = useTonWallet();
@@ -21,6 +22,7 @@ function HomeContent() {
     if (wallet?.account?.address) {
       try {
         const walletAddress = Address.parse(wallet.account.address).toString({ urlSafe: true, bounceable: false });
+        setWalletAddress(walletAddress);
         const savedTxHash = localStorage.getItem(walletAddress);
         
         if (savedTxHash) {
@@ -29,8 +31,10 @@ function HomeContent() {
           setCurrentView('success');
         }
       } catch (error) {
-        console.error('Error checking localStorage:', error);
+        serverLog.error('Error checking localStorage', error);
       }
+    } else {
+      setWalletAddress(null);
     }
   }, [wallet]);
 
@@ -50,7 +54,7 @@ function HomeContent() {
         const walletAddress = Address.parse(wallet.account.address).toString({ urlSafe: true, bounceable: false });
         localStorage.removeItem(walletAddress);
       } catch (error) {
-        console.error('Error clearing localStorage:', error);
+        serverLog.error('Error clearing localStorage', error);
       }
     }
     setCurrentView('main');

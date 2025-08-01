@@ -1,6 +1,7 @@
 import { ExternalLink, Camera } from 'lucide-react';
 import { OfflineQRCode } from './OfflineQRCode';
 import jsQR from 'jsqr';
+import { serverLog } from '../utils/serverLogger';
 
 interface ProofTicketProps {
   title: string;
@@ -96,17 +97,17 @@ export const ProofTicket = ({ title, wallet, proofUrl, date, onNewProof }: Proof
             const code = jsQR(imageData.data, imageData.width, imageData.height);
             
             if (code) {
-              console.log('QR Code detectado:', code.data);
+              serverLog.info('QR Code detectado:', code.data);
               
               // Faz requisição para verificar o resultado do link
               try {
                 const response = await fetch(code.data);
                 const result = await response.text();
-                console.log('Resultado do link:', result);
+                serverLog.info('Resultado do link:', result);
                 
                 // Verifica se o resultado contém "sucesso" (case-insensitive)
                 if (result.toLowerCase().includes('sucesso')) {
-                  console.log('✅ Resultado contém "sucesso" - redirecionando...');
+                  serverLog.info('✅ Resultado contém "sucesso" - redirecionando...');
                   
                   // Para o stream da câmera
                   stream.getTracks().forEach(track => track.stop());
@@ -116,7 +117,7 @@ export const ProofTicket = ({ title, wallet, proofUrl, date, onNewProof }: Proof
                   window.open(code.data, '_blank');
                   return;
                 } else {
-                  console.log('❌ Resultado não contém "sucesso"');
+                  serverLog.info('❌ Resultado não contém "sucesso"');
                   alert('Link verificado, mas resultado não contém "sucesso"');
                   stream.getTracks().forEach(track => track.stop());
                   document.body.removeChild(overlay);
@@ -124,11 +125,11 @@ export const ProofTicket = ({ title, wallet, proofUrl, date, onNewProof }: Proof
                 }
               } catch (fetchError) {
                 console.error('Erro ao verificar o link:', fetchError);
-                console.log('🔄 Tentando verificação alternativa...');
+                serverLog.info('🔄 Tentando verificação alternativa...');
                 
                 // Fallback: verifica se o próprio QR code data contém "sucesso"
                 if (code.data.toLowerCase().includes('sucesso')) {
-                  console.log('✅ QR Code data contém "sucesso" - redirecionando...');
+                  serverLog.info('✅ QR Code data contém "sucesso" - redirecionando...');
                   
                   stream.getTracks().forEach(track => track.stop());
                   document.body.removeChild(overlay);

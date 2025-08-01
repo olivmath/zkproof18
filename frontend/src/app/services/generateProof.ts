@@ -1,11 +1,9 @@
 import dotenv from "dotenv";
-
+import { serverLog } from "../utils/serverLogger";
 
 export const generateProof = async (birthYear: number, onProgress?: (progress: number, text: string) => void) => {
   dotenv.config();
   const BACKEND = process.env.BACKEND || "https://zk-backend-production.up.railway.app/api/verify";
-  console.log(">>>>>BACKEND")
-  console.info(BACKEND)
   
   try {
     onProgress?.(10, "Loading circuit...");
@@ -48,26 +46,20 @@ export const generateProof = async (birthYear: number, onProgress?: (progress: n
           vk: Array.from(vk),
         }),
       });
-
-      console.log("🔍 Backend response status:", response.status);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
         throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const responseData = await response.json();
-      console.log("🔍 Backend response data:", responseData);
-      console.log("🔍 txHash value:", responseData.txHash);
-      console.log("🔍 txHash type:", typeof responseData.txHash);
-      
+      const responseData = await response.json();      
       return responseData;
     } catch (err: any) {
-      console.error("❌ Backend request failed:", err);
+      serverLog.error("❌ Backend request failed", err);
       throw new Error(err.message || "Failed to submit proof to blockchain");
     }
   } catch (err: any) {
-    console.error("💔 Proof generation failed:", err);
+    serverLog.error("💔 Proof generation failed", err);
     throw new Error(err.message || "Proof generation failed");
   }
 };

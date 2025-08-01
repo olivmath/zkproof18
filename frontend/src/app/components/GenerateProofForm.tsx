@@ -20,6 +20,8 @@ export const GenerateProofForm = ({
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState("");
   const [error, setError] = useState("");
+  const [abortController, setAbortController] =
+    useState<AbortController | null>(null);
 
   const handleGenerateProof = async () => {
     if (!birthDate) {
@@ -41,11 +43,13 @@ export const GenerateProofForm = ({
       return;
     }
 
+    const controller = new AbortController();
+    setAbortController(controller);
     setIsGenerating(true);
     setProgress(0);
     setProgressText("Setting up session...");
     setError("");
-    
+
     try {
       const birthYear = birth.getFullYear();
 
@@ -55,19 +59,28 @@ export const GenerateProofForm = ({
         setProgressText(text);
       };
 
+      const handleCancelGeneration = () => {
+        if (abortController) {
+          abortController.abort();
+          setIsGenerating(false);
+          setProgress(0);
+          setProgressText("");
+          setAbortController(null);
+        }
+      };
       const result = await generateProof(birthYear, handleProgress);
 
       console.log("🔍 GenerateProof result:", result);
       console.log("🔍 result.txHash:", result.txHash);
-      
+
       // Finalizar progresso
       setProgress(95);
       setProgressText("Processing response...");
-      
+
       // Só avança quando tiver resposta do backend
       setProgress(90);
       setProgressText("Processing response...");
-      
+
       // Usar dados reais do backend
       const proofData = {
         txHash: result.txHash,
@@ -76,46 +89,73 @@ export const GenerateProofForm = ({
         verifiedDate: new Date().toISOString().split("T")[0],
         birthYear,
       };
-      
+
       console.log("🔍 ProofData created:", proofData);
       console.log("🔍 proofData.txHash:", proofData.txHash);
-      
+
       // Salvar no localStorage
       if (wallet?.account?.address && result.txHash) {
         try {
-          const walletAddress = Address.parse(wallet.account.address).toString({ urlSafe: true, bounceable: false });
+          const walletAddress = Address.parse(wallet.account.address).toString({
+            urlSafe: true,
+            bounceable: false,
+          });
           localStorage.setItem(walletAddress, result.txHash);
         } catch (error) {
-          console.error('Error saving to localStorage:', error);
+          console.error("Error saving to localStorage:", error);
         }
       }
 
       // Só completa quando tudo estiver pronto
       setProgress(100);
       setProgressText("Proof generated successfully!");
-      
+
       setTimeout(() => {
         setIsGenerating(false);
         onProofGenerated(proofData);
       }, 500);
     } catch (error: any) {
+      if (error.name === "AbortError") {
+        setProgressText("Generation cancelled");
+      } else {
+        setError(error.message || "An unexpected error occurred");
+      }
+    } finally {
       setIsGenerating(false);
-      setError(error.message || "An unexpected error occurred");
+      setAbortController(null);
     }
+  };
+
+  const handleCancelGeneration = () => {
+    setIsGenerating(false);
+    setProgress(0);
+    setProgressText("");
+    setError("");
   };
 
   // Calculate max date (18 years ago) and min date (100 years ago)
   const today = new Date();
-  const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate())
-    .toISOString().split('T')[0];
-  const minDate = new Date(today.getFullYear() - 100, today.getMonth(), today.getDate())
-    .toISOString().split('T')[0];
+  const maxDate = new Date(
+    today.getFullYear() - 18,
+    today.getMonth(),
+    today.getDate()
+  )
+    .toISOString()
+    .split("T")[0];
+  const minDate = new Date(
+    today.getFullYear() - 100,
+    today.getMonth(),
+    today.getDate()
+  )
+    .toISOString()
+    .split("T")[0];
 
   return (
     <Card>
       <div className="text-base font-medium mb-3">Generate Age Proof</div>
       <div className="text-sm text-gray-400 leading-relaxed mb-5">
-        Select your birth date to generate a zero-knowledge age proof. You must be between 18 and 100 years old to proceed.
+        Select your birth date to generate a zero-knowledge age proof. You must
+        be between 18 and 100 years old to proceed.
       </div>
 
       <div className="mb-5">
@@ -139,7 +179,10 @@ export const GenerateProofForm = ({
         />
       </div>
 
-      <Button onClick={handleGenerateProof} disabled={isGenerating || !birthDate}>
+      <Button
+        onClick={handleGenerateProof}
+        disabled={isGenerating || !birthDate}
+      >
         {isGenerating ? "GENERATING..." : "GENERATE ZK PROOF"}
       </Button>
 
@@ -156,12 +199,18 @@ export const GenerateProofForm = ({
           </div>
         </div>
       )}
+      {isGenerating && (
+        <Button
+          onClick={handleCancelGeneration}
+          className="mt-3 bg-red-600 hover:bg-red-700 text-sm py-1 px-4 w-auto"
+        >
+          CANCEL
+        </Button>
+      )}
 
       {error && (
         <div className="mt-5 p-3 bg-red-900/20 border border-red-700 rounded">
-          <div className="text-red-400 text-sm font-mono">
-            Error: {error}
-          </div>
+          <div className="text-red-400 text-sm font-mono">Error: {error}</div>
         </div>
       )}
     </Card>

@@ -224,32 +224,23 @@ export const ProofTicket = ({ title, wallet, proofUrl, date, onNewProof }: Proof
       </div>
       
       {/* Action Buttons */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <button
-          onClick={checkProof}
-          className="bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white py-3 px-4 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-all duration-200 hover:border-gray-500"
-        >
-          <ExternalLink size={16} />
-          Check Proof
-        </button>
-        
+      <div className="mb-4">
         <button
           onClick={scanProof}
-          className="bg-white hover:bg-gray-100 text-black py-3 px-4 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-all duration-200 hover:shadow-md"
+          className="w-full bg-white hover:bg-gray-100 text-black py-3 px-4 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-all duration-200 hover:shadow-md"
         >
           <Camera size={16} />
-          Scan Proof
+          VERIFY PROOF
         </button>
       </div>
       
       {/* Generate Another Proof Button */}
       <button
         onClick={onNewProof}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200"
+        className="w-3/4 mx-auto block bg-black/80 hover:bg-gray-900 text-white py-2 px-4 rounded-lg text-sm transition-all duration-200 font-light"
       >
-        GENERATE ANOTHER PROOF
+        GENERATE NEW PROOF
       </button>
-      
       {/* Footer */}
       <div className="text-center pt-4 border-t border-gray-700 mt-4">
         <p className="text-xs text-gray-500 tracking-wider">

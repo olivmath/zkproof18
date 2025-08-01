@@ -1,11 +1,10 @@
 "use client";
 
-import { TonConnectButton, useTonWallet } from "@tonconnect/ui-react";
+import { useTonWallet } from "@tonconnect/ui-react";
 import { TonConnectUIProvider } from "@tonconnect/ui-react";
 import { GameOfLife } from "./components/GameOfLife";
 import { Header } from "./components/Header";
 import { WalletStatus } from "./components/WalletStatus";
-import { Button } from "./components/Button";
 import { GenerateProofForm } from "./components/GenerateProofForm";
 import { SuccessSection } from "./components/SuccessSection";
 import { LoginScreen } from "./components/LoginScreen";

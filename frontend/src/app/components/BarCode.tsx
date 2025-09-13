@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from 'react';
+import React from 'react';
 
 interface BarCodeProps {
   value: string;
@@ -8,6 +9,39 @@ interface BarCodeProps {
   height?: number;
   className?: string;
 }
+
+interface BarcodeProps {
+  value: string;
+}
+
+export const Barcode = ({ value }: BarcodeProps) => {
+  // Generate barcode-like pattern based on the value
+  const generateBars = (text: string): React.ReactElement[] => {
+    const bars: React.ReactElement[] = [];
+    for (let i = 0; i < text.length; i++) {
+      const charCode = text.charCodeAt(i);
+      const width = (charCode % 4) + 1; // Width between 1-4
+      const height = (charCode % 3) + 2; // Height variation
+      bars.push(
+        <div
+          key={i}
+          className="bg-black inline-block mr-px"
+          style={{
+            width: `${width}px`,
+            height: `${height * 8}px`,
+          }}
+        />
+      );
+    }
+    return bars;
+  };
+
+  return (
+    <div className="flex items-end justify-center h-16 w-12">
+      {generateBars(value)}
+    </div>
+  );
+};
 
 export const BarCode = ({ value, width = 2, height = 100, className = '' }: BarCodeProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);

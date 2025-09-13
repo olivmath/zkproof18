@@ -1,6 +1,6 @@
 "use client";
 
-import { ProofTicket } from "./ProofTicket";
+import { TicketCard } from "./TicketCard";
 import { useTonWallet } from "@tonconnect/ui-react";
 import { Address } from "@ton/core";
 import { useState, useEffect } from "react";
@@ -18,7 +18,6 @@ export const SuccessSection = ({
 }: SuccessSectionProps) => {
   const wallet = useTonWallet();
   const [proofs, setProofs] = useState<ProofData[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
 
   // Função para converter endereço TON para formato user-friendly
   const formatTonAddress = (address: string) => {
@@ -39,9 +38,6 @@ export const SuccessSection = ({
     if (wallet?.account?.address) {
       const savedProofs = proofStorage.getWalletProofs(walletAddress);
       setProofs(savedProofs);
-      if (savedProofs.length > 0) {
-        setCurrentIndex(savedProofs.length - 1); // Mostrar a mais recente
-      }
     }
   }, [wallet, walletAddress]);
 
@@ -58,73 +54,49 @@ export const SuccessSection = ({
       if (newProof) {
         const updatedProofs = proofStorage.getWalletProofs(walletAddress);
         setProofs(updatedProofs);
-        setCurrentIndex(updatedProofs.length - 1);
       }
     }
   }, [proofData, wallet, walletAddress]);
 
-  const handlePrevious = () => {
-    setCurrentIndex(prev => prev > 0 ? prev - 1 : proofs.length - 1);
-  };
-
-  const handleNext = () => {
-    setCurrentIndex(prev => prev < proofs.length - 1 ? prev + 1 : 0);
-  };
-
-  if (proofs.length === 0) {
-    return (
-      <div className="text-center text-gray-400">
-        <p>Nenhuma prova encontrada</p>
-      </div>
-    );
-  }
-
-  const currentProof = proofs[currentIndex];
-
   return (
-    <div className="flex flex-col items-center space-y-4">
-      {/* Navegação */}
-      {proofs.length > 1 && (
-        <div className="flex items-center gap-4 mb-4">
-          <button
-            onClick={handlePrevious}
-            className="w-8 h-8 rounded-full bg-gray-700 text-white flex items-center justify-center hover:bg-gray-600"
-          >
-            ←
-          </button>
-          <span className="text-sm text-gray-400">
-            {currentIndex + 1} de {proofs.length}
-          </span>
-          <button
-            onClick={handleNext}
-            className="w-8 h-8 rounded-full bg-gray-700 text-white flex items-center justify-center hover:bg-gray-600"
-          >
-            →
-          </button>
-        </div>
-      )}
-      
-      {/* Ticket da Prova */}
-      <ProofTicket
-        proof={currentProof}
-        wallet={walletAddress}
-        onNewProof={onNewProof}
-      />
-      
-      {/* Indicadores */}
-      {proofs.length > 1 && (
-        <div className="flex gap-2 mt-4">
-          {proofs.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentIndex(index)}
-              className={`w-2 h-2 rounded-full transition-all ${
-                index === currentIndex ? 'bg-white' : 'bg-gray-600'
-              }`}
+    <div className="w-full">
+      {/* Header */}
+      <div className="mb-6">
+        <h2 className="text-white text-lg font-medium">
+          Recent Proofs ({proofs.length})
+        </h2>
+      </div>
+
+      {/* Proofs Grid */}
+      <div className="flex gap-4 overflow-x-auto pb-4">
+        {proofs.map((proof) => (
+          <div key={proof.id} className="flex-shrink-0">
+            <TicketCard
+              proofSize="9978"
+              txHash={proof.proofCode}
+              proofType="ULTRAPLONK"
+              blockNumber={1756993}
+              extrinsicIndex={0}
+              proofCode={proof.proofCode}
+              fee="0.006858"
+              date="01/08/25 08:39 PM"
             />
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
+
+      {/* Action Buttons */}
+      <div className="mt-6 space-y-3">
+        <button className="w-full bg-green-500 hover:bg-green-600 text-white py-3 px-6 rounded-lg font-medium transition-colors">
+          VERIFY PROOF
+        </button>
+        <button 
+          onClick={onNewProof}
+          className="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 px-6 rounded-lg font-medium transition-colors"
+        >
+          GENERATE NEW PROOF
+        </button>
+      </div>
     </div>
   );
 };

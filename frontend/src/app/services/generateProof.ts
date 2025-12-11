@@ -33,10 +33,30 @@ export const generateProof = async (
     });
 
     onProgress?.(60, "Generating proof...");
+    let genSeconds = 0;
+    const genTotal = 4;
+    const genIntervalId = setInterval(() => {
+      genSeconds = Math.min(genSeconds + 1, genTotal);
+      onProgress?.(60, `Generating proof ${genSeconds}s/≈${genTotal}s...`);
+      if (genSeconds >= genTotal) {
+        clearInterval(genIntervalId);
+      }
+    }, 1000);
+
     const { proof, publicInputs } = await backend.generateProof(witness);
     const vk = await backend.getVerificationKey();
+    clearInterval(genIntervalId);
 
     onProgress?.(80, "Submitting to blockchain...");
+    let subSeconds = 0;
+    const subTotal = 50;
+    const submitIntervalId = setInterval(() => {
+      subSeconds = Math.min(subSeconds + 1, subTotal);
+      onProgress?.(80, `Submitting to blockchain ${subSeconds}s/≈${subTotal}s...`);
+      if (subSeconds >= subTotal) {
+        clearInterval(submitIntervalId);
+      }
+    }, 1000);
     const controller = new AbortController();
     const twoMin = 120000;
     const timeoutId = setTimeout(() => controller.abort(), twoMin);
@@ -66,6 +86,7 @@ export const generateProof = async (
       return responseData;
     } finally {
       clearTimeout(timeoutId);
+      clearInterval(submitIntervalId);
     }
   } catch (err: any) {
     if (err.name === "AbortError") {

@@ -32,9 +32,10 @@ describe("ZK Proof API Tests", () => {
       .expect(200)
       .expect("Content-Type", /json/);
 
-    expect(response.body).toEqual({
+    expect(response.body).toMatchObject({
       message: "Proof verified successfully!",
       verified: true,
+      txHash: expect.any(String),
     });
   }, 180000);
 

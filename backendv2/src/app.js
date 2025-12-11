@@ -46,6 +46,14 @@ async function processNonceQueue() {
 
   isProcessingNonce = true;
   try {
+    // Ensure session is initialized
+    if (!session) {
+      console.warn("Session not initialized yet, waiting...");
+      isProcessingNonce = false;
+      setTimeout(() => processNonceQueue(), 100);
+      return;
+    }
+
     if (currentNonce === null) {
       // First time: get from chain
       const info = await session.getAccountInfo();
@@ -69,7 +77,7 @@ async function processNonceQueue() {
 
 async function initializeZkVerify() {
   try {
-    const SEED = process.env.SEED;
+    const SEED = "cry twist toddler village rug cradle hammer immense boost sunset butter situate";
     session = await zkVerifySession.start().Volta().withAccount(SEED);
     accountInfo = await session.getAccountInfo();
 

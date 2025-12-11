@@ -3,7 +3,7 @@ import { serverLog } from "../utils/serverLogger";
 
 export const generateProof = async (birthYear: number, onProgress?: (progress: number, text: string) => void) => {
   dotenv.config();
-  const BACKEND = process.env.BACKEND || "https://zk-backend-production.up.railway.app/api/verify";
+  const BACKEND = process.env.NEXT_PUBLIC_BACKEND || "FALED_GET_BACKEND_URL_FROM_ENVVAR";
   
   try {
     onProgress?.(10, "Loading circuit...");

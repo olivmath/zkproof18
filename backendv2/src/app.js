@@ -29,6 +29,44 @@ let accountInfo;
 let cachedBackend = null;
 let cachedCircuit = null;
 
+// Nonce management
+let currentNonce = null;
+const nonceQueue = [];
+let isProcessingNonce = false;
+
+async function getNextNonce() {
+  return new Promise((resolve) => {
+    nonceQueue.push(resolve);
+    processNonceQueue();
+  });
+}
+
+async function processNonceQueue() {
+  if (isProcessingNonce || nonceQueue.length === 0) return;
+
+  isProcessingNonce = true;
+  try {
+    if (currentNonce === null) {
+      // First time: get from chain
+      const info = await session.getAccountInfo();
+      currentNonce = info[0].nonce;
+    }
+
+    // Resolve one request and increment
+    const resolve = nonceQueue.shift();
+    resolve(currentNonce);
+    currentNonce++;
+  } catch (error) {
+    console.error("Error getting nonce:", error);
+  } finally {
+    isProcessingNonce = false;
+    // Process next in queue
+    if (nonceQueue.length > 0) {
+      processNonceQueue();
+    }
+  }
+}
+
 async function initializeZkVerify() {
   try {
     const SEED = process.env.SEED;
@@ -122,7 +160,12 @@ app.post("/api/verify", async (req, res) => {
     const vkHex = convertVerificationKey(vkUint8Array);
     
     // ###############################################################
-    console.log("7. submit to zkVerify");
+    console.log("7. get nonce for transaction");
+    const nonce = await getNextNonce();
+    console.log(`Using nonce: ${nonce}`);
+
+    // ###############################################################
+    console.log("8. submit to zkVerify");
     const { events } = await session
     .verify()
     .ultraplonk({ numberOfPublicInputs: 1 })
@@ -132,30 +175,31 @@ app.post("/api/verify", async (req, res) => {
         proof: proofHex,
         publicSignals: publicInputs
       },
+      nonce: nonce,
     });
-    
+
     // ###############################################################
-    console.log("8. wait for zkVerify response");
+    console.log("9. wait for zkVerify response");
     return new Promise((resolve, reject) => {
       events.once("includedInBlock", (info) => {
         console.log("Transaction included in block:", info);
       });
-      
+
       events.once("error", (err) => {
         console.error("Error in zkVerify transaction:", err);
-        reject(res.status(500).json({
+        return res.status(500).json({
           error: "zkVerify transaction failed",
           message: err.message,
-        }));
+        });
       });
-      
+
       events.once("finalized", (data) => {
-        console.log("9. proof finalized on zkVerify");
-        resolve(res.status(200).json({
+        console.log("10. proof finalized on zkVerify");
+        return res.status(200).json({
           message: "Proof verified successfully!",
           verified: true,
           txHash: data.txHash,
-        }));
+        });
       });
     });
     // ###############################################################
@@ -173,10 +217,22 @@ app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-// Error handler 
+// Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Internal server error" });
+});
+
+// Global unhandled rejection handler
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  // Don't crash the server, just log it
+});
+
+// Global uncaught exception handler
+process.on("uncaughtException", (error) => {
+  console.error("Uncaught Exception:", error);
+  // Log but keep server running
 });
 
 module.exports = app;

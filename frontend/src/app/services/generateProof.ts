@@ -1,11 +1,11 @@
-import dotenv from "dotenv";
 import { serverLog } from "../utils/serverLogger";
 
-export const generateProof = async (birthYear: number, onProgress?: (progress: number, text: string) => void) => {
-  dotenv.config();
+export const generateProof = async (
+  birthYear: number,
+  onProgress?: (progress: number, text: string) => void
+) => {
   const BACKEND = "https://zkproof18.onrender.com/api/verify";
-  
-  
+
   try {
     onProgress?.(10, "Loading circuit...");
     const { UltraPlonkBackend } = await import("@aztec/bb.js");
@@ -17,13 +17,13 @@ export const generateProof = async (birthYear: number, onProgress?: (progress: n
     const noir = new Noir(circuit);
     const backend = new UltraPlonkBackend(circuit.bytecode);
 
-    // Use current year dynamically
     const currentYear = new Date().getFullYear();
-    
-    // Validate inputs before generating proof
+
     const age = currentYear - birthYear;
     if (age < 18 || age > 100) {
-      throw new Error(`Age must be between 18 and 100 years. Current age: ${age}`);
+      throw new Error(
+        `Age must be between 18 and 100 years. Current age: ${age}`
+      );
     }
 
     onProgress?.(40, "Generating witness...");
@@ -37,7 +37,11 @@ export const generateProof = async (birthYear: number, onProgress?: (progress: n
     const vk = await backend.getVerificationKey();
 
     onProgress?.(80, "Submitting to blockchain...");
-    try {      
+    const controller = new AbortController();
+    const twoMin = 120000;
+    const timeoutId = setTimeout(() => controller.abort(), twoMin);
+
+    try {
       const response = await fetch(BACKEND, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -46,21 +50,29 @@ export const generateProof = async (birthYear: number, onProgress?: (progress: n
           proof: Array.from(proof),
           vk: Array.from(vk),
         }),
+        signal: controller.signal,
       });
-      
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
+        throw new Error(
+          errorData.error || `HTTP ${response.status}: ${response.statusText}`
+        );
       }
 
-      const responseData = await response.json();      
+      const responseData = await response.json();
       return responseData;
-    } catch (err: any) {
-      serverLog.error("❌ Backend request failed", err);
-      throw new Error(err.message || "Failed to submit proof to blockchain");
+    } finally {
+      clearTimeout(timeoutId);
     }
   } catch (err: any) {
-    serverLog.error("💔 Proof generation failed", err);
-    throw new Error(err.message || "Proof generation failed");
+    if (err.name === "AbortError") {
+      serverLog.error("⏱️ Request timeout after 2 minutes");
+      throw new Error("Request timed out after 2 minutes");
+    }
+    serverLog.error("❌ Backend request failed", err);
+    throw new Error(err.message || "Failed to submit proof to blockchain");
   }
 };

@@ -3,7 +3,7 @@ import { serverLog } from "../utils/serverLogger";
 
 export const generateProof = async (birthYear: number, onProgress?: (progress: number, text: string) => void) => {
   dotenv.config();
-  const BACKEND = process.env.BACKEND || "https://zkproof18.onrender.com/api/verify";
+  const BACKEND = "https://zkproof18.onrender.com/api/verify";
   
   
   try {

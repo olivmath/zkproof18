@@ -26,6 +26,9 @@ app.use(express.json());
 let session;
 let accountInfo;
 
+let cachedBackend = null;
+let cachedCircuit = null;
+
 async function initializeZkVerify() {
   try {
     const SEED = process.env.SEED;
@@ -86,10 +89,19 @@ app.post("/api/verify", async (req, res) => {
     const vkUint8Array = new Uint8Array(Object.values(vk));
     
     // ###############################################################
-    console.log("4. load circuit");
-    const circuitPath = path.join(__dirname, "../public/circuit.json");
-    const circuit = JSON.parse(fs.readFileSync(circuitPath, "utf-8"));
-    const backend = new UltraPlonkBackend(circuit.bytecode);
+    console.log("4. load circuit (from cache)");
+    if (!cachedCircuit) {
+      const circuitPath = path.join(__dirname, "../public/circuit.json");
+      cachedCircuit = JSON.parse(fs.readFileSync(circuitPath, "utf-8"));
+    }
+    const circuit = cachedCircuit;
+
+    console.log("4.5 load UltraPlonkBackend (from cache)");
+    if (!cachedBackend) {
+      cachedBackend = new UltraPlonkBackend(circuit.bytecode);
+      console.log("Backend initialized and cached");
+    }
+    const backend = cachedBackend;
     
     // ###############################################################
     console.log("5. verify proof");

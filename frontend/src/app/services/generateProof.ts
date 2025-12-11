@@ -34,7 +34,7 @@ export const generateProof = async (
 
     onProgress?.(60, "Generating proof...");
     let genSeconds = 0;
-    const genTotal = 4;
+    const genTotal = 5;
     const genIntervalId = setInterval(() => {
       genSeconds = Math.min(genSeconds + 1, genTotal);
       onProgress?.(60, `Generating proof ${genSeconds}s/≈${genTotal}s...`);
@@ -49,7 +49,7 @@ export const generateProof = async (
 
     onProgress?.(80, "Submitting to blockchain...");
     let subSeconds = 0;
-    const subTotal = 50;
+    const subTotal = 70;
     const submitIntervalId = setInterval(() => {
       subSeconds = Math.min(subSeconds + 1, subTotal);
       onProgress?.(80, `Submitting to blockchain ${subSeconds}s/≈${subTotal}s...`);

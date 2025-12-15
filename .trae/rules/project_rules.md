@@ -1,5 +1,5 @@
 1. In this project, we have 3 dir:
-   - backendv2: the backend of the project using express
+   - backend: the backend of the project using express
    - frontend: the frontend of the project using Nextjs + TonConnect and design to be a telegram miniapp
    - circuits-zk: the zk proof made in Noir-lang
 2. Be a minimalist, dont create unnecessary files or code.

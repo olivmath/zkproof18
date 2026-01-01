@@ -13,7 +13,7 @@
     "@noir-lang/noir_js": "1.0.0-beta.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.1",
-    "express": "^4.19.2",
+    "express": "^4.22.1",
     "helmet": "^7.0.0",
     "morgan": "^1.10.0",
     "zkverifyjs": "^0.12.1",
